@@ -78,8 +78,8 @@ export function ProductShowcaseSection({
   const imageUrls = useMemo(() => {
     const uniqueImages = Array.isArray(product.images)
       ? product.images.filter(
-          (image, index, images) => Boolean(image) && images.indexOf(image) === index
-        )
+        (image, index, images) => Boolean(image) && images.indexOf(image) === index
+      )
       : [];
 
     if (uniqueImages.length > 0) {
@@ -174,11 +174,10 @@ export function ProductShowcaseSection({
                     key={`${imageUrl}-${index}`}
                     type="button"
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`relative aspect-square overflow-hidden rounded-xl border transition ${
-                      isActive
-                        ? "border-foreground shadow-sm"
-                        : "border-border/70 opacity-85 hover:opacity-100"
-                    }`}
+                    className={`relative aspect-square overflow-hidden rounded-xl border transition ${isActive
+                      ? "border-foreground shadow-sm"
+                      : "border-border/70 opacity-85 hover:opacity-100"
+                      }`}
                     aria-label={`Ver imagen ${index + 1} de ${product.name}`}
                     aria-pressed={isActive}
                   >
@@ -195,7 +194,7 @@ export function ProductShowcaseSection({
             </div>
           )}
 
-          <div className="grid gap-3 rounded-2xl border border-border/70 bg-card p-4 text-sm text-muted-foreground sm:grid-cols-3">
+          <div className="flex justify-center gap-10 rounded-2xl border border-border/70 bg-card p-4 text-sm text-muted-foreground">
             <p className="inline-flex items-center gap-2">
               <Truck className="size-4 text-foreground" />
               Envio rapido a todo el pais
@@ -203,10 +202,6 @@ export function ProductShowcaseSection({
             <p className="inline-flex items-center gap-2">
               <ShieldCheck className="size-4 text-foreground" />
               Compra segura y protegida
-            </p>
-            <p className="inline-flex items-center gap-2">
-              <Check className="size-4 text-foreground" />
-              Cambios faciles en 30 dias
             </p>
           </div>
         </div>
@@ -311,24 +306,6 @@ export function ProductShowcaseSection({
             <p className="mt-1">Stock sujeto a disponibilidad.</p>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-border/70 bg-background p-4">
-            <p className="text-sm font-semibold text-foreground">Medios de pago</p>
-            <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
-              <p className="inline-flex items-center gap-2">
-                <CreditCard className="size-4 text-foreground" />
-                3 cuotas sin interes de {formatPrice(installmentsThree)}
-              </p>
-              <p className="inline-flex items-center gap-2">
-                <Wallet className="size-4 text-foreground" />
-                6 cuotas fijas de {formatPrice(installmentsSix)}
-              </p>
-              <p className="inline-flex items-center gap-2">
-                <Landmark className="size-4 text-foreground" />
-                Transferencia con 10% de descuento adicional
-              </p>
-            </div>
-          </div>
-
           <div className="mt-6 grid gap-2 text-sm text-muted-foreground">
             <p className="inline-flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-emerald-600" aria-hidden />
@@ -337,10 +314,6 @@ export function ProductShowcaseSection({
             <p className="inline-flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-emerald-600" aria-hidden />
               Soporte por WhatsApp para seguimiento de pedido.
-            </p>
-            <p className="inline-flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-emerald-600" aria-hidden />
-              Pagos con tarjetas, transferencia y billeteras.
             </p>
           </div>
         </div>
@@ -397,7 +370,7 @@ export function ProductShowcaseSection({
 
         <ProductCarouselSection
           id="similares"
-          eyebrow="Suggested"
+          eyebrow="Recomendados"
           title="Productos similares"
           description="Opciones relacionadas para completar la compra."
           products={similarProducts}

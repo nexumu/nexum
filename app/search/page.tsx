@@ -104,7 +104,7 @@ export default async function SearchPage({
                 {products.length} {productsLabel} encontrados
                 {query ? (
                   <>
-                    {" "}para <span className="font-semibold text-foreground">"{query}"</span>
+                    {" "}para <span className="font-semibold text-foreground">&quot;{query}&quot;</span>
                   </>
                 ) : (
                   "."
@@ -162,7 +162,7 @@ export default async function SearchPage({
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <aside className="space-y-6 lg:self-start xl:sticky xl:-top-2 2xl:top-32 xl:self-start">
             <Card className="border-border/70 shadow-sm">
               <CardHeader>
                 <CardTitle className="inline-flex items-center gap-2 text-base">
@@ -170,7 +170,7 @@ export default async function SearchPage({
                   Filtros rapidos
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 pb-4 sm:pb-5">
                 <form action="/search" method="GET" className="grid gap-3">
                   <label className="flex items-center gap-3 text-sm font-medium">
                     <input type="checkbox" name="new" value="1" defaultChecked={isNew} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
@@ -208,7 +208,7 @@ export default async function SearchPage({
               <CardHeader>
                 <CardTitle className="text-base">Categorias</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 pb-4 sm:pb-5">
                 {categories.map((categoryOption) => (
                   <Link
                     key={categoryOption.id}
