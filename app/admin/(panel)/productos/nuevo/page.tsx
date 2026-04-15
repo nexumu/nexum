@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -63,26 +63,24 @@ export default function AdminNewProductPage() {
   const [form, setForm] = useState<ProductFormState>(initialState);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const previewUrls = useMemo(
+    () => imageFiles.map((file) => URL.createObjectURL(file)),
+    [imageFiles]
+  );
 
   const updateField = (field: keyof ProductFormState, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   useEffect(() => {
-    if (!imageFile) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(imageFile);
-    setPreviewUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [imageFile]);
+    return () => {
+      previewUrls.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+    };
+  }, [previewUrls]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -134,8 +132,8 @@ export default function AdminNewProductPage() {
       return;
     }
 
-    if (!imageFile) {
-      setError("Seleccioná una imagen para el producto.");
+    if (imageFiles.length === 0) {
+      setError("Seleccioná al menos una imagen para el producto.");
       return;
     }
 
@@ -146,23 +144,30 @@ export default function AdminNewProductPage() {
 
     startTransition(async () => {
       try {
-        const uploadData = new FormData();
-        uploadData.append("file", imageFile);
-        uploadData.append("folder", "products");
+        const uploadResults = await Promise.all(
+          imageFiles.map(async (imageFile) => {
+            const uploadData = new FormData();
+            uploadData.append("file", imageFile);
+            uploadData.append("folder", "products");
 
-        const uploadResponse = await fetch("/api/cloudinary/upload", {
-          method: "POST",
-          body: uploadData,
-        });
+            const uploadResponse = await fetch("/api/cloudinary/upload", {
+              method: "POST",
+              body: uploadData,
+            });
 
-        if (!uploadResponse.ok) {
-          throw new Error("Upload failed");
-        }
+            if (!uploadResponse.ok) {
+              throw new Error("Upload failed");
+            }
 
-        const uploadResult = (await uploadResponse.json()) as {
-          url: string;
-          publicId: string;
-        };
+            return (await uploadResponse.json()) as {
+              url: string;
+              publicId: string;
+            };
+          })
+        );
+
+        const imageUrls = uploadResults.map((result) => result.url);
+        const imagePublicIds = uploadResults.map((result) => result.publicId);
 
         const payload: Record<string, unknown> = {
           id: trimmedId,
@@ -172,8 +177,9 @@ export default function AdminNewProductPage() {
           price: priceValue,
           isNew: form.isNew,
           isFeatured: form.isFeatured,
-          image: uploadResult.url,
-          imagePublicId: uploadResult.publicId,
+          image: imageUrls[0],
+          images: imageUrls,
+          imagePublicIds,
           categoryName: form.categoryName,
           subcategoryName: form.subcategoryName || null,
           createdAt: serverTimestamp(),
@@ -187,7 +193,7 @@ export default function AdminNewProductPage() {
         await setDoc(doc(db, "products", trimmedId), payload, { merge: true });
         setSuccess(true);
         setForm(initialState);
-        setImageFile(null);
+        setImageFiles([]);
         router.push("/admin/productos");
       } catch (submitError) {
         console.error(submitError);
@@ -319,23 +325,31 @@ export default function AdminNewProductPage() {
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
+                  multiple
+                  onChange={(event) =>
+                    setImageFiles(Array.from(event.target.files ?? []))
+                  }
                   required
                 />
               </label>
             </div>
 
-            {previewUrl ? (
+            {previewUrls.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Vista previa
+                  Vista previa ({previewUrls.length})
                 </p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={previewUrl}
-                  alt="Vista previa"
-                  className="h-48 w-full rounded-md border border-border/70 object-cover"
-                />
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {previewUrls.map((previewUrl, index) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={`${previewUrl}-${index}`}
+                      src={previewUrl}
+                      alt={`Vista previa ${index + 1}`}
+                      className="h-48 w-full rounded-md border border-border/70 object-cover"
+                    />
+                  ))}
+                </div>
               </div>
             ) : null}
 

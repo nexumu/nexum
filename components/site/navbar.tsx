@@ -181,11 +181,8 @@ export function Navbar() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-md px-1 py-1 text-sm font-semibold tracking-[0.18em] uppercase text-foreground"
+            className="inline-flex items-center mr-4 gap-2 rounded-md px-1 py-1 text-sm font-semibold tracking-[0.18em] uppercase text-foreground"
           >
-            <span className="grid size-7 place-items-center rounded-md border border-primary/35 bg-primary/15 text-primary">
-              N
-            </span>
             Nexum
           </Link>
 
@@ -249,90 +246,90 @@ export function Navbar() {
                       </DrawerDescription>
                     </DrawerHeader>
 
-              <div className="flex-1 overflow-auto px-4 pb-4">
-                {cartItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Todavia no agregaste productos.
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    {cartItems.map((item) => (
-                      <div
-                        key={`${item.id}-${item.size}`}
-                        className="flex flex-col gap-2 border-b border-border/60 pb-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Talle: {item.size || "Sin talle"}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground"
-                            aria-label="Remove item"
-                            onClick={() => removeFromCart(item.id, item.size)}
-                          >
-                            <Trash2 className="size-3" />
-                          </Button>
-                        </div>
+                    <div className="flex-1 overflow-auto px-4 pb-4">
+                      {cartItems.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          Todavia no agregaste productos.
+                        </p>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          {cartItems.map((item) => (
+                            <div
+                              key={`${item.id}-${item.size}`}
+                              className="flex flex-col gap-2 border-b border-border/60 pb-3"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold">{item.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Talle: {item.size || "Sin talle"}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 text-muted-foreground"
+                                  aria-label="Remove item"
+                                  onClick={() => removeFromCart(item.id, item.size)}
+                                >
+                                  <Trash2 className="size-3" />
+                                </Button>
+                              </div>
 
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-1 rounded-full border border-border/60">
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              aria-label="Decrease quantity"
-                              disabled={item.amount <= 1}
-                              onClick={() =>
-                                setCartItemAmount(
-                                  item.id,
-                                  item.size,
-                                  item.amount - 1
-                                )
-                              }
-                            >
-                              <Minus className="size-3" />
-                            </Button>
-                            <span className="min-w-6 text-center text-xs font-semibold">
-                              {item.amount}
-                            </span>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              aria-label="Increase quantity"
-                              onClick={() =>
-                                setCartItemAmount(
-                                  item.id,
-                                  item.size,
-                                  item.amount + 1
-                                )
-                              }
-                            >
-                              <Plus className="size-3" />
-                            </Button>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">
-                              {formatPrice(item.price)} x {item.amount}
-                            </p>
-                            <p className="text-sm font-semibold">
-                              {formatPrice(item.price * item.amount)}
-                            </p>
-                          </div>
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-1 rounded-full border border-border/60">
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7"
+                                    aria-label="Decrease quantity"
+                                    disabled={item.amount <= 1}
+                                    onClick={() =>
+                                      setCartItemAmount(
+                                        item.id,
+                                        item.size,
+                                        item.amount - 1
+                                      )
+                                    }
+                                  >
+                                    <Minus className="size-3" />
+                                  </Button>
+                                  <span className="min-w-6 text-center text-xs font-semibold">
+                                    {item.amount}
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7"
+                                    aria-label="Increase quantity"
+                                    onClick={() =>
+                                      setCartItemAmount(
+                                        item.id,
+                                        item.size,
+                                        item.amount + 1
+                                      )
+                                    }
+                                  >
+                                    <Plus className="size-3" />
+                                  </Button>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatPrice(item.price)} x {item.amount}
+                                  </p>
+                                  <p className="text-sm font-semibold">
+                                    {formatPrice(item.price * item.amount)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      )}
+                    </div>
 
                     <DrawerFooter>
                       <div className="flex items-center justify-between text-sm font-semibold">

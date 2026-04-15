@@ -17,6 +17,7 @@ export type ProductCardData = {
   name: string;
   description: string;
   image: string;
+  images?: string[];
   price: number;
   discountPercent?: number;
   isNew?: boolean;

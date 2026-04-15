@@ -77,11 +77,22 @@ body {
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
-.word-marquee-track {
-  animation: word-marquee 24s linear infinite;
+.word-marquee-rail {
+  display: flex;
+  width: max-content;
+  align-items: center;
+}
+
+.word-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.85rem;
+  padding-inline: 0.5rem;
+  animation: word-marquee 42s linear infinite;
   will-change: transform;
 }

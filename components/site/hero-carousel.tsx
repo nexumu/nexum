@@ -15,21 +15,21 @@ import {
 
 const slides = [
   {
-    image: "/hero-1.svg",
+    image: "/hero1.jpg",
     eyebrow: "Coleccion hogar",
     title: "Detalles calidos para cada mesa",
     description:
       "Vasos, termitos y accesorios para disfrutar tus bebidas favoritas con estilo simple y funcional.",
   },
   {
-    image: "/hero-2.svg",
+    image: "/hero2.jpg",
     eyebrow: "Nuevos ingresos",
     title: "Termos y termitos para la rutina diaria",
     description:
       "Diseno durable y acabados neutros para acompanarte en la oficina, en casa o en movimiento.",
   },
   {
-    image: "/hero-3.svg",
+    image: "/hero3.jpg",
     eyebrow: "Selecciones Nexum",
     title: "Regalos utiles con estetica de hogar",
     description:

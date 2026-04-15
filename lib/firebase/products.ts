@@ -22,11 +22,20 @@ function mapProductData(
   id: string,
   data: Record<string, unknown>
 ): ProductCardData {
+  const rawImages = Array.isArray(data.images)
+    ? data.images.filter((image): image is string => typeof image === "string")
+    : [];
+  const primaryImage =
+    typeof data.image === "string" && data.image
+      ? data.image
+      : rawImages[0] ?? fallbackImage;
+
   return {
     id: String(data.id ?? id),
     name: String(data.name ?? "Producto"),
     description: String(data.description ?? ""),
-    image: String(data.image ?? fallbackImage),
+    image: primaryImage,
+    images: rawImages.length > 0 ? rawImages : [primaryImage],
     price: Number(data.price ?? 0),
     discountPercent:
       typeof data.discountPercent === "number"

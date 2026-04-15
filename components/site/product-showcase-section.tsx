@@ -7,6 +7,13 @@ import { ProductCarouselSection } from "@/components/site/product-carousel-secti
 import { type ProductCardData } from "@/components/site/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { addToCart } from "@/lib/cart";
 
 type ProductShowcaseSectionProps = {
@@ -29,6 +36,19 @@ export function ProductShowcaseSection({
   similarProducts,
 }: ProductShowcaseSectionProps) {
   const [selectedSize, setSelectedSize] = useState("M");
+  const imageUrls = useMemo(() => {
+    const uniqueImages = Array.isArray(product.images)
+      ? product.images.filter(
+          (image, index, images) => Boolean(image) && images.indexOf(image) === index
+        )
+      : [];
+
+    if (uniqueImages.length > 0) {
+      return uniqueImages;
+    }
+
+    return [product.image];
+  }, [product.image, product.images]);
 
   const pricing = useMemo(() => {
     const discount = product.discountPercent
@@ -127,16 +147,42 @@ export function ProductShowcaseSection({
         </div>
 
         <div className="order-1 md:order-2">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
+          {imageUrls.length > 1 ? (
+            <Carousel
+              opts={{ align: "start", containScroll: "trimSnaps" }}
+              className="rounded-2xl"
+            >
+              <CarouselContent className="-ml-0">
+                {imageUrls.map((imageUrl, index) => (
+                  <CarouselItem key={`${imageUrl}-${index}`} className="pl-0">
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
+                      <Image
+                        src={imageUrl}
+                        alt={`${product.name} ${index + 1}`}
+                        fill
+                        priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-3 bg-background/90" />
+              <CarouselNext className="right-3 bg-background/90" />
+            </Carousel>
+          ) : (
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
+              <Image
+                src={imageUrls[0]}
+                alt={product.name}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
       </div>
 
