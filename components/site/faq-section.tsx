@@ -9,12 +9,12 @@ const faqItems = [
   {
     question: "Cuanto tarda el envio?",
     answer:
-      "Los envios nacionales demoran entre 24 y 72 horas habiles segun la ciudad. Al confirmar la compra recibes tracking por email.",
+      "Los envios nacionales demoran entre 24 y 72 horas habiles segun la ciudad. Al confirmar la compra recibes seguimiento por email o WhatsApp.",
   },
   {
-    question: "Puedo cambiar el talle si no me queda bien?",
+    question: "Puedo cambiar un producto si no era lo que esperaba?",
     answer:
-      "Si. Puedes solicitar cambio dentro de los primeros 15 dias desde la entrega, siempre que la prenda este en perfecto estado.",
+      "Si. Puedes solicitar cambio dentro de los primeros 15 dias desde la entrega, siempre que el producto este sin uso y en su empaque original.",
   },
   {
     question: "Que medios de pago aceptan?",
@@ -22,15 +22,15 @@ const faqItems = [
       "Aceptamos tarjetas de credito y debito, transferencias y billeteras digitales. Tambien puedes pagar en cuotas segun promociones vigentes.",
   },
   {
-    question: "Los descuentos del sitio se acumulan?",
+    question: "Como cuido mis termos y vasos termicos?",
     answer:
-      "Depende de la promocion. En cada producto indicamos si el descuento es acumulable con cupones o beneficios de temporada.",
+      "Recomendamos lavado a mano con agua tibia y no usar abrasivos. En cada ficha de producto vas a encontrar cuidados y recomendaciones de uso.",
   },
 ];
 
 export function FaqSection() {
   return (
-    <section className="mx-auto mt-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="faq" className="mt-16 w-full px-4 sm:px-6 lg:px-8">
       <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm sm:p-8">
         <p className="text-sm font-medium tracking-[0.22em] uppercase text-muted-foreground">
           FAQ

@@ -25,7 +25,7 @@ export function ProductCarouselSection({
   products,
 }: ProductCarouselSectionProps) {
   return (
-    <section id={id} className="mx-auto mt-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id={id} className="mt-16 w-full px-4 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-2">
         {eyebrow && (
           <p className="text-sm font-medium tracking-[0.22em] uppercase text-muted-foreground">

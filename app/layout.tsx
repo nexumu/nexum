@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
-import { Footer } from "@/components/site/footer";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -14,8 +13,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Epicom Storefront Template",
-  description: "Reusable e-commerce template with shadcn/ui and Next.js",
+  title: "Nexum | Hogar y bebidas",
+  description:
+    "Tienda Nexum de vasos, termitos, termos y accesorios para el hogar.",
 };
 
 export default function RootLayout({
@@ -24,10 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
-    >
+      <html
+        lang="es"
+        className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
+      >
       <body className="min-h-screen flex flex-col">
         <div className="flex-1">{children}</div>
       </body>
