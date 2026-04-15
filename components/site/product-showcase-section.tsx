@@ -141,7 +141,7 @@ export function ProductShowcaseSection({
 
       <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <div className="space-y-4">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-border/70 bg-muted/30">
+          <div className="relative aspect-4/5 overflow-hidden rounded-3xl border border-border/70 bg-muted/30">
             <Image
               src={selectedImage}
               alt={product.name}
@@ -213,7 +213,7 @@ export function ProductShowcaseSection({
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             {product.name}
           </h1>
-          <p className="mt-4 break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mt-4 wrap-break-word text-sm leading-relaxed text-muted-foreground sm:text-base">
             {product.description}
           </p>
 

@@ -7,6 +7,14 @@ import { ProductCard } from "@/components/site/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { getCategories } from "@/lib/firebase/categories";
 import { getFilteredProducts } from "@/lib/firebase/products";
@@ -86,6 +94,87 @@ export default async function SearchPage({
     return qs ? `/search?${qs}` : "/search";
   };
 
+  const filtersPanel = (
+    <div className="space-y-6">
+      <Card className="border-border/70 shadow-sm">
+        <CardHeader>
+          <CardTitle className="inline-flex items-center gap-2 text-base">
+            <Filter className="size-4" />
+            Filtros rapidos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 pb-4 sm:pb-5">
+          <form action="/search" method="GET" className="grid gap-3">
+            <label className="flex items-center gap-3 text-sm font-medium">
+              <input type="checkbox" name="new" value="1" defaultChecked={isNew} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
+              Nuevos ingresos
+            </label>
+            <label className="flex items-center gap-3 text-sm font-medium">
+              <input type="checkbox" name="featured" value="1" defaultChecked={isFeatured} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
+              Destacados
+            </label>
+            <Input name="q" defaultValue={query} placeholder="Buscar por nombre" className="border-border/70" />
+            <label className="grid gap-2 text-sm font-medium">
+              Categoria
+              <select name="category" defaultValue={category} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+                <option value="">Todas</option>
+                {categories.map((categoryOption) => (
+                  <option key={categoryOption.id} value={categoryOption.name}>{categoryOption.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-2 text-sm font-medium">
+              Subcategoria
+              <select name="subcategory" defaultValue={subcategory} disabled={!category} className="h-10 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
+                <option value="">Todas</option>
+                {selectedCategory?.subcategories.map((subcategoryOption) => (
+                  <option key={subcategoryOption.id} value={subcategoryOption.name}>{subcategoryOption.name}</option>
+                ))}
+              </select>
+            </label>
+            <Button type="submit" className="w-full">Aplicar filtros</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/70 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Categorias</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 pb-4 sm:pb-5">
+          {categories.map((categoryOption) => (
+            <Link
+              key={categoryOption.id}
+              href={buildHref({ nextCategory: category === categoryOption.name ? "" : categoryOption.name, nextSubcategory: "" })}
+              className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm transition ${category === categoryOption.name ? "border-primary/40 bg-primary/10 text-foreground" : "border-border/70 text-muted-foreground hover:bg-accent"}`}
+            >
+              {categoryOption.name}
+              <span className="text-xs">{category === categoryOption.name ? "Activo" : "Ver"}</span>
+            </Link>
+          ))}
+
+          {selectedCategory?.subcategories?.length ? (
+            <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
+              <p className="text-xs font-medium text-muted-foreground">Subcategorias de {selectedCategory.name}</p>
+              {selectedCategory.subcategories.map((subcategoryOption) => (
+                <Link
+                  key={subcategoryOption.id}
+                  href={buildHref({ nextCategory: selectedCategory.name, nextSubcategory: subcategory === subcategoryOption.name ? "" : subcategoryOption.name })}
+                  className={`flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition ${subcategory === subcategoryOption.name ? "bg-primary/10 font-medium text-foreground" : "text-muted-foreground hover:bg-accent"}`}
+                >
+                  {subcategoryOption.name}
+                  {subcategory === subcategoryOption.name ? <Badge variant="outline" className="h-5 px-1.5 text-[10px]">Activa</Badge> : null}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">Selecciona una categoria para ver sus subcategorias.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -162,86 +251,33 @@ export default async function SearchPage({
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-          <aside className="space-y-6 lg:self-start xl:sticky xl:-top-2 2xl:top-32 xl:self-start">
-            <Card className="border-border/70 shadow-sm">
-              <CardHeader>
-                <CardTitle className="inline-flex items-center gap-2 text-base">
-                  <Filter className="size-4" />
-                  Filtros rapidos
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pb-4 sm:pb-5">
-                <form action="/search" method="GET" className="grid gap-3">
-                  <label className="flex items-center gap-3 text-sm font-medium">
-                    <input type="checkbox" name="new" value="1" defaultChecked={isNew} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
-                    Nuevos ingresos
-                  </label>
-                  <label className="flex items-center gap-3 text-sm font-medium">
-                    <input type="checkbox" name="featured" value="1" defaultChecked={isFeatured} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
-                    Destacados
-                  </label>
-                  <Input name="q" defaultValue={query} placeholder="Buscar por nombre" className="border-border/70" />
-                  <label className="grid gap-2 text-sm font-medium">
-                    Categoria
-                    <select name="category" defaultValue={category} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
-                      <option value="">Todas</option>
-                      {categories.map((categoryOption) => (
-                        <option key={categoryOption.id} value={categoryOption.name}>{categoryOption.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium">
-                    Subcategoria
-                    <select name="subcategory" defaultValue={subcategory} disabled={!category} className="h-10 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
-                      <option value="">Todas</option>
-                      {selectedCategory?.subcategories.map((subcategoryOption) => (
-                        <option key={subcategoryOption.id} value={subcategoryOption.name}>{subcategoryOption.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <Button type="submit" className="w-full">Aplicar filtros</Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Categorias</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pb-4 sm:pb-5">
-                {categories.map((categoryOption) => (
-                  <Link
-                    key={categoryOption.id}
-                    href={buildHref({ nextCategory: category === categoryOption.name ? "" : categoryOption.name, nextSubcategory: "" })}
-                    className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm transition ${category === categoryOption.name ? "border-primary/40 bg-primary/10 text-foreground" : "border-border/70 text-muted-foreground hover:bg-accent"}`}
-                  >
-                    {categoryOption.name}
-                    <span className="text-xs">{category === categoryOption.name ? "Activo" : "Ver"}</span>
-                  </Link>
-                ))}
-
-                {selectedCategory?.subcategories?.length ? (
-                  <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
-                    <p className="text-xs font-medium text-muted-foreground">Subcategorias de {selectedCategory.name}</p>
-                    {selectedCategory.subcategories.map((subcategoryOption) => (
-                      <Link
-                        key={subcategoryOption.id}
-                        href={buildHref({ nextCategory: selectedCategory.name, nextSubcategory: subcategory === subcategoryOption.name ? "" : subcategoryOption.name })}
-                        className={`flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition ${subcategory === subcategoryOption.name ? "bg-primary/10 font-medium text-foreground" : "text-muted-foreground hover:bg-accent"}`}
-                      >
-                        {subcategoryOption.name}
-                        {subcategory === subcategoryOption.name ? <Badge variant="outline" className="h-5 px-1.5 text-[10px]">Activa</Badge> : null}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Selecciona una categoria para ver sus subcategorias.</p>
-                )}
-              </CardContent>
-            </Card>
+          <aside className="hidden lg:block lg:self-start xl:sticky xl:-top-10 2xl:top-32 xl:self-start">
+            {filtersPanel}
           </aside>
 
           <section>
+            <div className="mb-4 lg:hidden">
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button type="button" variant="outline" className="w-full rounded-full">
+                    <Filter className="size-4" />
+                    Abrir filtros
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="max-h-[85dvh]">
+                  <DrawerHeader>
+                    <DrawerTitle>Filtros</DrawerTitle>
+                    <DrawerDescription>
+                      Ajusta la busqueda por categoria, subcategoria y tipo de producto.
+                    </DrawerDescription>
+                  </DrawerHeader>
+                  <div className="overflow-y-auto px-4 pb-6">
+                    {filtersPanel}
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </div>
+
             <div className="mb-5 flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
                 Mostrando <span className="font-semibold text-foreground">{products.length}</span> {productsLabel}

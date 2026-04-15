@@ -61,7 +61,7 @@ export function HeroCarousel() {
                   priority
                   className="object-cover transition duration-700 group-hover:scale-[1.02]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.26_0.03_45_/_0.84)] via-[oklch(0.26_0.03_45_/_0.54)] to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-r from-[oklch(0.26_0.03_45/0.84)] via-[oklch(0.26_0.03_45/0.54)] to-transparent" />
                 <div className="relative flex min-h-[calc(100vh-7.75rem)] max-w-xl flex-col justify-center gap-4 px-6 py-10 text-[oklch(0.98_0.004_95)] sm:px-12">
                   <p className="text-xs font-semibold tracking-[0.24em] uppercase text-[oklch(0.91_0.012_88)]">
                     {slide.eyebrow}

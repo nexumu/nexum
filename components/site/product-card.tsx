@@ -123,8 +123,8 @@ export function ProductCard({
       }}
     >
 
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+      <div className="relative aspect-4/3 overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent" />
         <Image
           src={image}
           alt={name}
@@ -148,7 +148,7 @@ export function ProductCard({
 
       <CardHeader className="space-y-2 pb-3">
         <CardTitle className="line-clamp-1 text-base leading-tight sm:text-lg">{name}</CardTitle>
-        <CardDescription className="line-clamp-2 break-words text-sm leading-relaxed">
+        <CardDescription className="line-clamp-2 wrap-break-word text-sm leading-relaxed">
           {description}
         </CardDescription>
       </CardHeader>

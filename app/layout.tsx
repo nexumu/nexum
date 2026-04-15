@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
+
+import { RouteScrollReset } from "@/components/site/route-scroll-reset";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,6 +31,7 @@ export default function RootLayout({
         className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
       >
       <body className="min-h-screen flex flex-col">
+        <RouteScrollReset />
         <div className="flex-1">{children}</div>
       </body>
     </html>
