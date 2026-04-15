@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 
@@ -31,7 +32,9 @@ export default function RootLayout({
         className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
       >
       <body className="min-h-screen flex flex-col">
-        <RouteScrollReset />
+        <Suspense fallback={null}>
+          <RouteScrollReset />
+        </Suspense>
         <div className="flex-1">{children}</div>
       </body>
     </html>
