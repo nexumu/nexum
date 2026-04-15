@@ -57,6 +57,14 @@ const announcementMessages = [
   "Envios a todo el pais",
 ];
 
+const optionTypeLabel: Record<NonNullable<CartItem["optionType"]>, string> = {
+  talle: "Talle",
+  color: "Color",
+  tamano: "Tamano",
+  material: "Material",
+  otro: "Variante",
+};
+
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -127,6 +135,7 @@ export function Navbar() {
       cartItems.reduce((total, item) => total + item.price * item.amount, 0),
     [cartItems]
   );
+  const hasCartItems = cartItems.length > 0;
 
   const showPreviousAnnouncement = () => {
     setAnnouncementIndex((current) =>
@@ -247,22 +256,36 @@ export function Navbar() {
                     </DrawerHeader>
 
                     <div className="flex-1 overflow-auto px-4 pb-4">
-                      {cartItems.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          Todavia no agregaste productos.
-                        </p>
+                      {!hasCartItems ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Todavia no agregaste productos.
+                          </p>
+                          <Button asChild type="button" className="w-full">
+                            <Link href="#new" onClick={() => setCartOpen(false)}>
+                              Explorar productos
+                            </Link>
+                          </Button>
+                        </div>
                       ) : (
                         <div className="flex flex-col gap-4">
-                          {cartItems.map((item) => (
-                            <div
-                              key={`${item.id}-${item.size}`}
-                              className="flex flex-col gap-2 border-b border-border/60 pb-3"
-                            >
+                          {cartItems.map((item) => {
+                            const label = item.optionType
+                              ? optionTypeLabel[item.optionType]
+                              : "Talle";
+                            const value = item.optionValue || item.size || "Sin opcion";
+                            const identity = `${item.id}-${item.optionType ?? "talle"}-${value}`;
+
+                            return (
+                              <div
+                                key={identity}
+                                className="flex flex-col gap-2 border-b border-border/60 pb-3"
+                              >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <p className="text-sm font-semibold">{item.name}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    Talle: {item.size || "Sin talle"}
+                                    {label}: {value}
                                   </p>
                                 </div>
                                 <Button
@@ -271,7 +294,14 @@ export function Navbar() {
                                   variant="ghost"
                                   className="h-7 w-7 text-muted-foreground"
                                   aria-label="Remove item"
-                                  onClick={() => removeFromCart(item.id, item.size)}
+                                  onClick={() =>
+                                    removeFromCart(
+                                      item.id,
+                                      item.size,
+                                      item.optionType,
+                                      item.optionValue
+                                    )
+                                  }
                                 >
                                   <Trash2 className="size-3" />
                                 </Button>
@@ -290,7 +320,9 @@ export function Navbar() {
                                       setCartItemAmount(
                                         item.id,
                                         item.size,
-                                        item.amount - 1
+                                        item.amount - 1,
+                                        item.optionType,
+                                        item.optionValue
                                       )
                                     }
                                   >
@@ -309,7 +341,9 @@ export function Navbar() {
                                       setCartItemAmount(
                                         item.id,
                                         item.size,
-                                        item.amount + 1
+                                        item.amount + 1,
+                                        item.optionType,
+                                        item.optionValue
                                       )
                                     }
                                   >
@@ -325,18 +359,29 @@ export function Navbar() {
                                   </p>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
 
                     <DrawerFooter>
-                      <div className="flex items-center justify-between text-sm font-semibold">
-                        <span>Total</span>
-                        <span>{formatPrice(cartTotal)}</span>
-                      </div>
-                      <Button type="button">Finalizar pedido</Button>
+                      {hasCartItems ? (
+                        <>
+                          <div className="flex items-center justify-between text-sm font-semibold">
+                            <span>Total</span>
+                            <span>{formatPrice(cartTotal)}</span>
+                          </div>
+                          <Button type="button">Finalizar pedido</Button>
+                        </>
+                      ) : (
+                        <Button asChild type="button" variant="outline">
+                          <Link href="#new" onClick={() => setCartOpen(false)}>
+                            Explorar
+                          </Link>
+                        </Button>
+                      )}
                     </DrawerFooter>
                   </DrawerContent>
                 </Drawer>

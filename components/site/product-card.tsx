@@ -22,6 +22,13 @@ export type ProductCardData = {
   discountPercent?: number;
   isNew?: boolean;
   isFeatured?: boolean;
+  variantType?: "talle" | "color" | "tamano" | "material" | "otro";
+  variants?: {
+    id: string;
+    value: string;
+    price: number;
+    discountPercent?: number;
+  }[];
 };
 
 type ProductCardProps = ProductCardData;

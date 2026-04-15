@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { Filter, Search, Sparkles, Tag } from "lucide-react";
 
-import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
+import { Navbar } from "@/components/site/navbar";
 import { ProductCard } from "@/components/site/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,15 +53,14 @@ export default async function SearchPage({
   const selectedCategory = categories.find(
     (categoryOption) => categoryOption.name === category
   );
-
   const productsLabel = products.length === 1 ? "producto" : "productos";
 
   const activeFilters = [
-    query ? `“${query}”` : null,
+    query ? `"${query}"` : null,
     isNew ? "Nuevos" : null,
     isFeatured ? "Destacados" : null,
-    category ? category : null,
-    subcategory ? subcategory : null,
+    category || null,
+    subcategory || null,
   ].filter(Boolean) as string[];
 
   const buildHref = ({
@@ -76,15 +76,13 @@ export default async function SearchPage({
     nextCategory?: string;
     nextSubcategory?: string;
   }) => {
-    const params = new URLSearchParams();
-    if (nextQuery?.trim()) params.set("q", nextQuery.trim());
-    if (nextIsNew) params.set("new", "1");
-    if (nextIsFeatured) params.set("featured", "1");
-    if (nextCategory?.trim()) params.set("category", nextCategory.trim());
-    if (nextSubcategory?.trim()) {
-      params.set("subcategory", nextSubcategory.trim());
-    }
-    const qs = params.toString();
+    const nextParams = new URLSearchParams();
+    if (nextQuery?.trim()) nextParams.set("q", nextQuery.trim());
+    if (nextIsNew) nextParams.set("new", "1");
+    if (nextIsFeatured) nextParams.set("featured", "1");
+    if (nextCategory?.trim()) nextParams.set("category", nextCategory.trim());
+    if (nextSubcategory?.trim()) nextParams.set("subcategory", nextSubcategory.trim());
+    const qs = nextParams.toString();
     return qs ? `/search?${qs}` : "/search";
   };
 
@@ -92,228 +90,178 @@ export default async function SearchPage({
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="mx-auto w-full max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
-        <header className="mb-8 flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Catálogo
-          </p>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Resultados de búsqueda
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {products.length} {productsLabel} encontrados.
+        <header className="mb-8 overflow-hidden rounded-3xl border border-border/70 bg-[linear-gradient(145deg,oklch(0.98_0.008_95)_0%,oklch(0.95_0.018_88)_55%,oklch(0.93_0.03_84)_100%)] p-5 shadow-sm sm:p-7">
+          <div className="flex flex-col gap-4">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[oklch(0.45_0.04_65)]">
+              <Sparkles className="size-3.5" />
+              Catalogo Nexum
             </p>
-          </div>
-          <form action="/search" method="GET" className="flex flex-col gap-3 md:flex-row">
-            <div className="flex-1">
-              <Input name="q" placeholder="Buscar por nombre" defaultValue={query} />
+            <div className="flex flex-col gap-2">
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Resultados de busqueda
+              </h1>
+              <p className="text-sm text-muted-foreground sm:text-base">
+                {products.length} {productsLabel} encontrados
+                {query ? (
+                  <>
+                    {" "}para <span className="font-semibold text-foreground">"{query}"</span>
+                  </>
+                ) : (
+                  "."
+                )}
+              </p>
             </div>
-            <input type="hidden" name="category" value={category} />
-            <input type="hidden" name="subcategory" value={subcategory} />
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" className="min-w-32">
+
+            <form action="/search" method="GET" className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  name="q"
+                  defaultValue={query}
+                  placeholder="Buscar por nombre, categoria o estilo"
+                  className="h-11 rounded-full border-border/70 bg-background/85 pl-10"
+                />
+              </label>
+              <input type="hidden" name="category" value={category} />
+              <input type="hidden" name="subcategory" value={subcategory} />
+              <input type="hidden" name="new" value={isNew ? "1" : ""} />
+              <input type="hidden" name="featured" value={isFeatured ? "1" : ""} />
+              <Button type="submit" className="h-11 min-w-32 rounded-full">
                 Buscar
               </Button>
-              <Button type="button" variant="outline" asChild>
+              <Button type="button" variant="outline" asChild className="h-11 rounded-full">
                 <Link href="/search">Limpiar</Link>
               </Button>
-            </div>
-            <input type="hidden" name="new" value={isNew ? "1" : ""} />
-            <input type="hidden" name="featured" value={isFeatured ? "1" : ""} />
-          </form>
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>Filtros activos:</span>
-              {query && (
-                <Link
-                  href={buildHref({ nextQuery: "" })}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent"
-                >
-                  {`“${query}”`}
-                  <span aria-hidden>×</span>
-                </Link>
-              )}
-              {isNew && (
-                <Link
-                  href={buildHref({ nextIsNew: false })}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent"
-                >
-                  Nuevos
-                  <span aria-hidden>×</span>
-                </Link>
-              )}
-              {isFeatured && (
-                <Link
-                  href={buildHref({ nextIsFeatured: false })}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent"
-                >
-                  Destacados
-                  <span aria-hidden>×</span>
-                </Link>
-              )}
-              {category && (
-                <Link
-                  href={buildHref({ nextCategory: "" })}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent"
-                >
-                  {category}
-                  <span aria-hidden>×</span>
-                </Link>
-              )}
-              {subcategory && (
-                <Link
-                  href={buildHref({ nextSubcategory: "" })}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent"
-                >
-                  {subcategory}
-                  <span aria-hidden>×</span>
-                </Link>
-              )}
-              <Link
-                href="/search"
-                className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/70 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground"
-              >
-                Limpiar todo
-              </Link>
-            </div>
-          )}
+            </form>
+
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                  <Tag className="size-3.5" />
+                  Filtros activos
+                </span>
+                {query && (
+                  <Link href={buildHref({ nextQuery: "" })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">{`"${query}"`}<span aria-hidden>x</span></Link>
+                )}
+                {isNew && (
+                  <Link href={buildHref({ nextIsNew: false })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">Nuevos<span aria-hidden>x</span></Link>
+                )}
+                {isFeatured && (
+                  <Link href={buildHref({ nextIsFeatured: false })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">Destacados<span aria-hidden>x</span></Link>
+                )}
+                {category && (
+                  <Link href={buildHref({ nextCategory: "" })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">{category}<span aria-hidden>x</span></Link>
+                )}
+                {subcategory && (
+                  <Link href={buildHref({ nextSubcategory: "" })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">{subcategory}<span aria-hidden>x</span></Link>
+                )}
+                <Link href="/search" className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/70 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground">Limpiar todo</Link>
+              </div>
+            )}
+          </div>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-            <Card>
+            <Card className="border-border/70 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-base">Filtros rápidos</CardTitle>
+                <CardTitle className="inline-flex items-center gap-2 text-base">
+                  <Filter className="size-4" />
+                  Filtros rapidos
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <form action="/search" method="GET" className="grid gap-3">
                   <label className="flex items-center gap-3 text-sm font-medium">
-                    <input
-                      type="checkbox"
-                      name="new"
-                      value="1"
-                      defaultChecked={isNew}
-                      className="size-4 rounded-sm border border-border bg-background text-primary accent-primary"
-                    />
+                    <input type="checkbox" name="new" value="1" defaultChecked={isNew} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
                     Nuevos ingresos
                   </label>
                   <label className="flex items-center gap-3 text-sm font-medium">
-                    <input
-                      type="checkbox"
-                      name="featured"
-                      value="1"
-                      defaultChecked={isFeatured}
-                      className="size-4 rounded-sm border border-border bg-background text-primary accent-primary"
-                    />
+                    <input type="checkbox" name="featured" value="1" defaultChecked={isFeatured} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
                     Destacados
                   </label>
-                  <Input name="q" defaultValue={query} placeholder="Buscar por nombre" />
+                  <Input name="q" defaultValue={query} placeholder="Buscar por nombre" className="border-border/70" />
                   <label className="grid gap-2 text-sm font-medium">
-                    Categoría
-                    <select
-                      name="category"
-                      defaultValue={category}
-                      onChange={(event) => {
-                        const form = event.currentTarget.form;
-                        if (!form) return;
-                        const subcategoryField = form.querySelector(
-                          "select[name='subcategory']"
-                        ) as HTMLSelectElement | null;
-                        if (subcategoryField) subcategoryField.value = "";
-                      }}
-                      className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                    >
+                    Categoria
+                    <select name="category" defaultValue={category} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
                       <option value="">Todas</option>
                       {categories.map((categoryOption) => (
-                        <option key={categoryOption.id} value={categoryOption.name}>
-                          {categoryOption.name}
-                        </option>
+                        <option key={categoryOption.id} value={categoryOption.name}>{categoryOption.name}</option>
                       ))}
                     </select>
                   </label>
                   <label className="grid gap-2 text-sm font-medium">
-                    Subcategoría
-                    <select
-                      name="subcategory"
-                      defaultValue={subcategory}
-                      disabled={!category}
-                      className="h-10 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    >
+                    Subcategoria
+                    <select name="subcategory" defaultValue={subcategory} disabled={!category} className="h-10 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
                       <option value="">Todas</option>
                       {selectedCategory?.subcategories.map((subcategoryOption) => (
-                        <option key={subcategoryOption.id} value={subcategoryOption.name}>
-                          {subcategoryOption.name}
-                        </option>
+                        <option key={subcategoryOption.id} value={subcategoryOption.name}>{subcategoryOption.name}</option>
                       ))}
                     </select>
                   </label>
-                  <Button type="submit" className="w-full">
-                    Aplicar filtros
-                  </Button>
+                  <Button type="submit" className="w-full">Aplicar filtros</Button>
                 </form>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/70 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-base">Categorías</CardTitle>
+                <CardTitle className="text-base">Categorias</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {categories.map((categoryOption) => (
-                  <label
+                  <Link
                     key={categoryOption.id}
-                    className="flex items-center gap-3 text-sm text-muted-foreground"
+                    href={buildHref({ nextCategory: category === categoryOption.name ? "" : categoryOption.name, nextSubcategory: "" })}
+                    className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm transition ${category === categoryOption.name ? "border-primary/40 bg-primary/10 text-foreground" : "border-border/70 text-muted-foreground hover:bg-accent"}`}
                   >
-                    <input
-                      type="checkbox"
-                      name="category"
-                      value={categoryOption.name}
-                      checked={category === categoryOption.name}
-                      readOnly
-                      className="size-4 rounded-sm border border-border bg-background text-primary accent-primary"
-                    />
                     {categoryOption.name}
-                  </label>
+                    <span className="text-xs">{category === categoryOption.name ? "Activo" : "Ver"}</span>
+                  </Link>
                 ))}
+
                 {selectedCategory?.subcategories?.length ? (
                   <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Subcategorías de {selectedCategory.name}
-                    </p>
+                    <p className="text-xs font-medium text-muted-foreground">Subcategorias de {selectedCategory.name}</p>
                     {selectedCategory.subcategories.map((subcategoryOption) => (
-                      <label
+                      <Link
                         key={subcategoryOption.id}
-                        className="flex items-center gap-3 text-xs text-muted-foreground"
+                        href={buildHref({ nextCategory: selectedCategory.name, nextSubcategory: subcategory === subcategoryOption.name ? "" : subcategoryOption.name })}
+                        className={`flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition ${subcategory === subcategoryOption.name ? "bg-primary/10 font-medium text-foreground" : "text-muted-foreground hover:bg-accent"}`}
                       >
-                        <input
-                          type="checkbox"
-                          name="subcategory"
-                          value={subcategoryOption.name}
-                          checked={subcategory === subcategoryOption.name}
-                          readOnly
-                          className="size-3.5 rounded-sm border border-border bg-background text-primary accent-primary"
-                        />
                         {subcategoryOption.name}
-                      </label>
+                        {subcategory === subcategoryOption.name ? <Badge variant="outline" className="h-5 px-1.5 text-[10px]">Activa</Badge> : null}
+                      </Link>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Seleccioná la categoría desde los filtros rápidos.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Selecciona una categoria para ver sus subcategorias.</p>
                 )}
               </CardContent>
             </Card>
           </aside>
 
-          <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {products.length > 0 ? (
-              products.map((product) => <ProductCard key={product.id} {...product} />)
-            ) : (
-              <div className="col-span-full rounded-lg border border-dashed border-border/70 p-8 text-sm text-muted-foreground">
-                No hay productos que coincidan con los filtros actuales.
-              </div>
-            )}
+          <section>
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Mostrando <span className="font-semibold text-foreground">{products.length}</span> {productsLabel}
+              </p>
+              {query ? (
+                <Badge variant="outline" className="rounded-full px-3 py-1 text-xs">
+                  Busqueda: {query}
+                </Badge>
+              ) : null}
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {products.length > 0 ? (
+                products.map((product) => <ProductCard key={product.id} {...product} />)
+              ) : (
+                <div className="col-span-full rounded-2xl border border-dashed border-border/70 bg-card/60 p-10 text-sm text-muted-foreground">
+                  No hay productos que coincidan con los filtros actuales.
+                </div>
+              )}
+            </div>
           </section>
         </div>
       </main>

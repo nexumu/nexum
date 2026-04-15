@@ -30,6 +30,48 @@ function mapProductData(
       ? data.image
       : rawImages[0] ?? fallbackImage;
 
+  const rawVariantType = data.variantType;
+  const variantType =
+    rawVariantType === "talle" ||
+    rawVariantType === "color" ||
+    rawVariantType === "tamano" ||
+    rawVariantType === "material" ||
+    rawVariantType === "otro"
+      ? rawVariantType
+      : undefined;
+
+  const variants = Array.isArray(data.variants)
+    ? data.variants
+        .map((variant, index) => {
+          if (!variant || typeof variant !== "object") {
+            return null;
+          }
+
+          const source = variant as Record<string, unknown>;
+          const value = String(source.value ?? "").trim();
+          const price = Number(source.price);
+          const discountRaw = source.discountPercent;
+          const discountNumber =
+            discountRaw === undefined || discountRaw === null || discountRaw === ""
+              ? undefined
+              : Number(discountRaw);
+
+          if (!value || Number.isNaN(price)) {
+            return null;
+          }
+
+          return {
+            id: String(source.id ?? `${id}-variant-${index}`),
+            value,
+            price,
+            ...(discountNumber !== undefined && !Number.isNaN(discountNumber)
+              ? { discountPercent: discountNumber }
+              : {}),
+          };
+        })
+        .filter((variant): variant is NonNullable<typeof variant> => Boolean(variant))
+    : undefined;
+
   return {
     id: String(data.id ?? id),
     name: String(data.name ?? "Producto"),
@@ -45,6 +87,8 @@ function mapProductData(
         : undefined,
     isNew: Boolean(data.isNew),
     isFeatured: Boolean(data.isFeatured),
+    variantType,
+    variants,
   };
 }
 

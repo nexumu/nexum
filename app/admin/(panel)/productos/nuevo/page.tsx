@@ -39,6 +39,15 @@ type ProductFormState = {
   subcategoryName: string;
 };
 
+type ProductVariantType = "talle" | "color" | "tamano" | "material" | "otro";
+
+type ProductVariantDraft = {
+  id: string;
+  value: string;
+  price: string;
+  discountPercent: string;
+};
+
 const initialState: ProductFormState = {
   id: "",
   name: "",
@@ -59,8 +68,33 @@ type CategoryOption = {
 
 const categoriesCollection = collection(db, "categories");
 
+function createVariantId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `variant-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getVariantTypeLabel(variantType: ProductVariantType) {
+  switch (variantType) {
+    case "talle":
+      return "Talle";
+    case "color":
+      return "Color";
+    case "tamano":
+      return "Tamaño";
+    case "material":
+      return "Material";
+    default:
+      return "Variante";
+  }
+}
+
 export default function AdminNewProductPage() {
   const [form, setForm] = useState<ProductFormState>(initialState);
+  const [variantType, setVariantType] = useState<ProductVariantType>("talle");
+  const [variants, setVariants] = useState<ProductVariantDraft[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -74,6 +108,34 @@ export default function AdminNewProductPage() {
 
   const updateField = (field: keyof ProductFormState, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const addVariant = () => {
+    setVariants((current) => [
+      ...current,
+      {
+        id: createVariantId(),
+        value: "",
+        price: form.price.trim(),
+        discountPercent: form.discountPercent.trim(),
+      },
+    ]);
+  };
+
+  const updateVariantField = (
+    variantId: string,
+    field: keyof Omit<ProductVariantDraft, "id">,
+    value: string
+  ) => {
+    setVariants((current) =>
+      current.map((variant) =>
+        variant.id === variantId ? { ...variant, [field]: value } : variant
+      )
+    );
+  };
+
+  const removeVariant = (variantId: string) => {
+    setVariants((current) => current.filter((variant) => variant.id !== variantId));
   };
 
   useEffect(() => {
@@ -119,6 +181,12 @@ export default function AdminNewProductPage() {
     const trimmedPrice = form.price.trim();
     const priceValue = Number(trimmedPrice);
     const discountValue = form.discountPercent ? Number(form.discountPercent) : null;
+    const sanitizedVariants = variants.map((variant) => ({
+      id: variant.id,
+      value: variant.value.trim(),
+      price: variant.price.trim(),
+      discountPercent: variant.discountPercent.trim(),
+    }));
 
     if (
       !trimmedId ||
@@ -139,6 +207,31 @@ export default function AdminNewProductPage() {
 
     if (discountValue !== null && Number.isNaN(discountValue)) {
       setError("El descuento debe ser un número válido.");
+      return;
+    }
+
+    if (sanitizedVariants.some((variant) => !variant.value)) {
+      setError(`Completá el valor de cada ${getVariantTypeLabel(variantType).toLowerCase()}.`);
+      return;
+    }
+
+    if (
+      sanitizedVariants.some(
+        (variant) => variant.price === "" || Number.isNaN(Number(variant.price))
+      )
+    ) {
+      setError("Cada variante debe tener un precio válido.");
+      return;
+    }
+
+    if (
+      sanitizedVariants.some(
+        (variant) =>
+          variant.discountPercent !== "" &&
+          Number.isNaN(Number(variant.discountPercent))
+      )
+    ) {
+      setError("El descuento de cada variante debe ser un número válido.");
       return;
     }
 
@@ -190,9 +283,27 @@ export default function AdminNewProductPage() {
           payload.discountPercent = discountValue;
         }
 
+        if (sanitizedVariants.length > 0) {
+          payload.variantType = variantType;
+          payload.variants = sanitizedVariants.map((variant) => {
+            const variantPrice = Number(variant.price);
+            const variantDiscount =
+              variant.discountPercent === "" ? discountValue : Number(variant.discountPercent);
+
+            return {
+              id: variant.id,
+              value: variant.value,
+              price: variantPrice,
+              ...(variantDiscount !== null ? { discountPercent: variantDiscount } : {}),
+            };
+          });
+        }
+
         await setDoc(doc(db, "products", trimmedId), payload, { merge: true });
         setSuccess(true);
         setForm(initialState);
+        setVariantType("talle");
+        setVariants([]);
         setImageFiles([]);
         router.push("/admin/productos");
       } catch (submitError) {
@@ -332,6 +443,115 @@ export default function AdminNewProductPage() {
                   required
                 />
               </label>
+            </div>
+
+            <div className="rounded-md border border-border/70 p-4">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div className="grid gap-2">
+                  <p className="text-sm font-semibold">Variantes del producto</p>
+                  <p className="text-xs text-muted-foreground">
+                    Elegí el tipo de variante y agregá opciones con precio y descuento.
+                  </p>
+                </div>
+
+                <div className="flex items-end gap-2">
+                  <label className="flex flex-col gap-2 text-sm font-medium">
+                    Tipo de variante
+                    <select
+                      value={variantType}
+                      onChange={(event) =>
+                        setVariantType(event.target.value as ProductVariantType)
+                      }
+                      className="h-10 min-w-40 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="talle">Talle</option>
+                      <option value="color">Color</option>
+                      <option value="tamano">Tamaño</option>
+                      <option value="material">Material</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </label>
+                  <Button type="button" variant="outline" onClick={addVariant}>
+                    Agregar variante
+                  </Button>
+                </div>
+              </div>
+
+              {variants.length > 0 ? (
+                <div className="mt-4 grid gap-3">
+                  {variants.map((variant, index) => (
+                    <div
+                      key={variant.id}
+                      className="grid gap-3 rounded-md border border-border/70 p-3 sm:grid-cols-[1fr_140px_140px_auto] sm:items-end"
+                    >
+                      <label className="flex flex-col gap-2 text-sm font-medium">
+                        {getVariantTypeLabel(variantType)} #{index + 1}
+                        <Input
+                          value={variant.value}
+                          onChange={(event) =>
+                            updateVariantField(variant.id, "value", event.target.value)
+                          }
+                          placeholder={
+                            variantType === "talle"
+                              ? "M"
+                              : variantType === "color"
+                              ? "Negro"
+                              : variantType === "tamano"
+                              ? "500 ml"
+                              : variantType === "material"
+                              ? "Cuero"
+                              : "Valor"
+                          }
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-2 text-sm font-medium">
+                        Precio
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={variant.price}
+                          onChange={(event) =>
+                            updateVariantField(variant.id, "price", event.target.value)
+                          }
+                          placeholder={form.price || "129"}
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-2 text-sm font-medium">
+                        Descuento (%)
+                        <Input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={variant.discountPercent}
+                          onChange={(event) =>
+                            updateVariantField(
+                              variant.id,
+                              "discountPercent",
+                              event.target.value
+                            )
+                          }
+                          placeholder={form.discountPercent || "0"}
+                        />
+                      </label>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => removeVariant(variant.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Sin variantes cargadas. Si no agregás variantes, se guarda solo el producto base.
+                </p>
+              )}
             </div>
 
             {previewUrls.length > 0 ? (
