@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type CatalogInfo } from "@/lib/catalog";
 
 const shopLinks = [
   { href: "#new", label: "Recien llegados" },
@@ -20,27 +21,49 @@ const supportLinks = [
   { href: "#", label: "Ayuda" },
 ];
 
-export function Footer() {
+type FooterProps = {
+  company?: string;
+  catalog?: CatalogInfo;
+};
+
+export function Footer({ company, catalog }: FooterProps) {
+  const basePath = company ? `/${company}` : "";
+  const homePath = basePath || "/";
+  const whatsappHref = catalog?.whatsapp
+    ? `https://wa.me/${catalog.whatsapp.replace(/\D/g, "")}`
+    : null;
   return (
     <footer className="mt-auto border-t border-border/70 bg-card">
       <div className="grid w-full gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div>
           <Link
-            href="/"
+            href={homePath}
             className="inline-flex items-center gap-2 text-sm font-semibold tracking-[0.18em] uppercase"
           >
             <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
               N
             </span>
-            Nexum
+            {catalog?.username || "Nexum"}
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Diseno cotidiano para vasos, termos y accesorios que hacen mas calidos
-            los momentos de todos los dias.
+            {catalog?.description ||
+              "Diseno cotidiano para vasos, termos y accesorios que hacen mas calidos los momentos de todos los dias."}
           </p>
           <div className="mt-5 text-xs text-muted-foreground">
             Compra segura · Envio rapido · Cambios simples
           </div>
+          {whatsappHref ? (
+            <div className="mt-4">
+              <Link
+                href={whatsappHref}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-primary transition hover:opacity-80"
+              >
+                Contacto por WhatsApp
+              </Link>
+            </div>
+          ) : null}
         </div>
 
         <div>
@@ -48,7 +71,7 @@ export function Footer() {
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
             {shopLinks.map((link) => (
               <li key={link.label}>
-                <Link href={link.href} className="transition hover:text-foreground">
+                <Link href={`${homePath}${link.href}`} className="transition hover:text-foreground">
                   {link.label}
                 </Link>
               </li>
@@ -85,7 +108,10 @@ export function Footer() {
 
       <div className="border-t border-border/70">
         <div className="flex w-full flex-col gap-3 px-4 py-4 text-xs text-muted-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>© {new Date().getFullYear()} Nexum. Todos los derechos reservados.</p>
+          <p>
+            © {new Date().getFullYear()} {catalog?.username || "Nexum"}. Todos los
+            derechos reservados.
+          </p>
           <div className="flex flex-wrap gap-4">
             <Link href="#" className="hover:text-foreground">
               Politica de privacidad

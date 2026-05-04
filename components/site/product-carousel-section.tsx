@@ -15,6 +15,7 @@ type ProductCarouselSectionProps = {
   title: string;
   description?: string;
   products: ProductCardData[];
+  company?: string;
 };
 
 export function ProductCarouselSection({
@@ -23,6 +24,7 @@ export function ProductCarouselSection({
   title,
   description,
   products,
+  company,
 }: ProductCarouselSectionProps) {
   return (
     <section id={id} className="mt-16 w-full px-4 sm:px-6 lg:px-8">
@@ -48,7 +50,7 @@ export function ProductCarouselSection({
               key={product.id}
               className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
             >
-              <ProductCard {...product} />
+              <ProductCard {...product} company={company} />
             </CarouselItem>
           ))}
         </CarouselContent>

@@ -1,68 +1,48 @@
-import { HeroCarousel } from "@/components/site/hero-carousel";
-import { Navbar } from "@/components/site/navbar";
-import { FaqSection } from "@/components/site/faq-section";
-import { ProductCarouselSection } from "@/components/site/product-carousel-section";
-import { CollectionHighlightSection } from "@/components/site/collection-highlight-section";
-import { Footer } from "@/components/site/footer";
-import { WordCarouselStrip } from "@/components/site/word-carousel-strip";
-import {
-  getFeaturedProducts,
-  getNewProducts,
-} from "@/lib/firebase/products";
+import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+import { Button } from "@/components/ui/button";
 
-export default async function Home() {
-  const [newArrivals, featuredProducts] = await Promise.all([
-    getNewProducts(8),
-    getFeaturedProducts(8),
-  ]);
-
+export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pb-20">
-        <HeroCarousel />
-        <WordCarouselStrip />
+    <main className="relative isolate min-h-screen overflow-hidden bg-[radial-gradient(circle_at_20%_0%,oklch(0.95_0.03_220)_0%,transparent_44%),radial-gradient(circle_at_80%_0%,oklch(0.94_0.03_140)_0%,transparent_42%),oklch(0.99_0.004_95)] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col">
+        <header className="flex items-center justify-between gap-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[oklch(0.36_0.03_230)]">
+            Sendostock
+          </p>
+          <Button asChild className="rounded-full px-6">
+            <Link href="https://www.sendostock.com/" target="_blank" rel="noreferrer">
+              Crear mi catalogo
+            </Link>
+          </Button>
+        </header>
 
-        <ProductCarouselSection
-          id="new"
-          eyebrow="Novedades"
-          title="Recien llegados para tu hogar"
-          description="Piezas nuevas para sumar calidez y practicidad a cada momento del dia."
-          products={newArrivals}
-        />
+        <section className="mt-18 rounded-3xl border border-border/70 bg-card/80 p-8 shadow-[0_30px_90px_-48px_oklch(0.31_0.04_225)] backdrop-blur sm:p-12 lg:p-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+            Tu catalogo en minutos
+          </p>
+          <h1 className="mt-4 max-w-3xl text-balance text-4xl leading-tight font-semibold text-foreground sm:text-5xl lg:text-6xl">
+            Convierte tu negocio en un catalogo online compartible por link.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Sube tus productos, personaliza tu marca y empieza a vender por WhatsApp sin
+            complicaciones tecnicas.
+          </p>
 
-        <CollectionHighlightSection
-          id="collars"
-          eyebrow="Coleccion mascotas"
-          title="Collares para perros con estilo y resistencia"
-          description="Disenados para el paseo diario, con materiales comodos y terminaciones pensadas para durar."
-          image="/collar.jpg"
-          href="/search?category=Mascotas"
-        />
-
-        <ProductCarouselSection
-          id="featured"
-          eyebrow="Seleccion Nexum"
-          title="Favoritos de la semana"
-          description="Una curaduria de vasos, termitos y accesorios para regalar o renovar tus espacios."
-          products={featuredProducts}
-        />
-
-        <CollectionHighlightSection
-          id="drinkware"
-          eyebrow="Coleccion termica"
-          title="Termos para acompanarte todo el dia"
-          description="Modelos termicos para oficina, viajes o entrenamientos. Conserva la temperatura y suma diseno."
-          image="/termos.jpg"
-          href="/search?category=Termos"
-          align="right"
-        />
-
-        <FaqSection />
-      </main>
-      <Footer />
-    </div>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="rounded-full px-8">
+              <Link href="https://www.sendostock.com/" target="_blank" rel="noreferrer">
+                Quiero mi catalogo
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="rounded-full px-8">
+              <Link href="https://www.sendostock.com/" target="_blank" rel="noreferrer">
+                Ver mas informacion
+              </Link>
+            </Button>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

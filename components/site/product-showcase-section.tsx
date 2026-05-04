@@ -24,6 +24,7 @@ import { addToCart } from "@/lib/cart";
 type ProductShowcaseSectionProps = {
   product: ProductCardData;
   similarProducts: ProductCardData[];
+  company?: string;
 };
 
 const fallbackSizes = ["XS", "S", "M", "L", "XL"];
@@ -47,7 +48,11 @@ function formatPrice(value: number) {
 export function ProductShowcaseSection({
   product,
   similarProducts,
+  company,
 }: ProductShowcaseSectionProps) {
+  const basePath = company ? `/${company}` : "";
+  const homePath = basePath || "/";
+  const searchPath = `${basePath}/search`;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
@@ -128,11 +133,11 @@ export function ProductShowcaseSection({
   return (
     <section className="mx-auto mt-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <nav className="mb-4 flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-        <Link href="/" className="transition hover:text-foreground">
+        <Link href={homePath} className="transition hover:text-foreground">
           Inicio
         </Link>
         <span aria-hidden>/</span>
-        <Link href="/search" className="transition hover:text-foreground">
+        <Link href={searchPath} className="transition hover:text-foreground">
           Tienda
         </Link>
         <span aria-hidden>/</span>
@@ -374,6 +379,7 @@ export function ProductShowcaseSection({
           title="Productos similares"
           description="Opciones relacionadas para completar la compra."
           products={similarProducts}
+          company={company}
         />
       </div>
     </section>

@@ -214,3 +214,12 @@ export function removeFromCart(
   writeCart(items);
   return items;
 }
+
+export function clearCart() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  writeCart([]);
+  return [];
+}

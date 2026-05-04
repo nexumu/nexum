@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Filter, Search, Sparkles, Tag } from "lucide-react";
+import Link from "next/link";
 
 import { Footer } from "@/components/site/footer";
 import { Navbar } from "@/components/site/navbar";
@@ -35,20 +35,24 @@ function isChecked(value?: string) {
   return value === "1" || value === "true" || value === "on";
 }
 
-export default async function SearchPage({
+export default async function CompanySearchPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ company: string }>;
   searchParams: Promise<SearchParams>;
 }) {
-  const params = await searchParams;
-  const query = params.q?.trim() ?? "";
-  const isNew = isChecked(params.new);
-  const isFeatured = isChecked(params.featured);
-  const category = params.category?.trim() ?? "";
-  const subcategory = params.subcategory?.trim() ?? "";
-  const catalog = await getCatalogInfo("nexum");
+  const { company: companyRaw } = await params;
+  const company = companyRaw.trim().toLowerCase();
+  const paramsValue = await searchParams;
+  const query = paramsValue.q?.trim() ?? "";
+  const isNew = isChecked(paramsValue.new);
+  const isFeatured = isChecked(paramsValue.featured);
+  const category = paramsValue.category?.trim() ?? "";
+  const subcategory = paramsValue.subcategory?.trim() ?? "";
+  const searchPath = `/${company}/search`;
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, catalog] = await Promise.all([
     getFilteredProducts({
       queryText: query,
       isNew,
@@ -58,6 +62,7 @@ export default async function SearchPage({
       limitCount: 24,
     }),
     getCategories(),
+    getCatalogInfo(company),
   ]);
 
   const selectedCategory = categories.find(
@@ -93,7 +98,7 @@ export default async function SearchPage({
     if (nextCategory?.trim()) nextParams.set("category", nextCategory.trim());
     if (nextSubcategory?.trim()) nextParams.set("subcategory", nextSubcategory.trim());
     const queryString = nextParams.toString();
-    return queryString ? `/search?${queryString}` : "/search";
+    return queryString ? `${searchPath}?${queryString}` : searchPath;
   };
 
   const filtersPanel = (
@@ -106,7 +111,7 @@ export default async function SearchPage({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 pb-4 sm:pb-5">
-          <form action="/search" method="GET" className="grid gap-3">
+          <form action={searchPath} method="GET" className="grid gap-3">
             <label className="flex items-center gap-3 text-sm font-medium">
               <input type="checkbox" name="new" value="1" defaultChecked={isNew} className="size-4 rounded-sm border border-border bg-background text-primary accent-primary" />
               Nuevos ingresos
@@ -179,7 +184,7 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar catalog={catalog} />
+      <Navbar company={company} catalog={catalog} />
       <main className="mx-auto w-full max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8 overflow-hidden rounded-3xl border border-border/70 bg-[linear-gradient(145deg,oklch(0.98_0.008_95)_0%,oklch(0.95_0.018_88)_55%,oklch(0.93_0.03_84)_100%)] p-5 shadow-sm sm:p-7">
           <div className="flex flex-col gap-4">
@@ -203,7 +208,7 @@ export default async function SearchPage({
               </p>
             </div>
 
-            <form action="/search" method="GET" className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+            <form action={searchPath} method="GET" className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
               <label className="relative block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -221,7 +226,7 @@ export default async function SearchPage({
                 Buscar
               </Button>
               <Button type="button" variant="outline" asChild className="h-11 rounded-full">
-                <Link href="/search">Limpiar</Link>
+                <Link href={searchPath}>Limpiar</Link>
               </Button>
             </form>
 
@@ -246,7 +251,7 @@ export default async function SearchPage({
                 {subcategory && (
                   <Link href={buildHref({ nextSubcategory: "" })} className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium text-foreground transition hover:bg-accent">{subcategory}<span aria-hidden>x</span></Link>
                 )}
-                <Link href="/search" className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/70 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground">Limpiar todo</Link>
+                <Link href={searchPath} className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/70 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground">Limpiar todo</Link>
               </div>
             )}
           </div>
@@ -294,7 +299,7 @@ export default async function SearchPage({
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {products.length > 0 ? (
                 products.map((product) => (
-                  <ProductCard key={product.id} {...product} />
+                  <ProductCard key={product.id} {...product} company={company} />
                 ))
               ) : (
                 <div className="col-span-full rounded-2xl border border-dashed border-border/70 bg-card/60 p-10 text-sm text-muted-foreground">
@@ -305,7 +310,7 @@ export default async function SearchPage({
           </section>
         </div>
       </main>
-      <Footer catalog={catalog} />
+      <Footer company={company} catalog={catalog} />
     </div>
   );
 }

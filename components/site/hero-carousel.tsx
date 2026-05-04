@@ -37,7 +37,12 @@ const slides = [
   },
 ];
 
-export function HeroCarousel() {
+type HeroCarouselProps = {
+  company?: string;
+};
+
+export function HeroCarousel({ company }: HeroCarouselProps) {
+  const basePath = company ? `/${company}` : "";
   return (
     <section className="w-full">
       <Carousel
@@ -74,7 +79,7 @@ export function HeroCarousel() {
                   </p>
                   <div className="mt-3 flex flex-wrap gap-3">
                     <Button asChild size="lg">
-                      <Link href="#new">Ver productos</Link>
+                      <Link href={`${basePath}#new`}>Ver productos</Link>
                     </Button>
                     <Button
                       asChild
@@ -82,7 +87,7 @@ export function HeroCarousel() {
                       variant="outline"
                       className="border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
                     >
-                      <Link href="#featured">Elegidos Nexum</Link>
+                      <Link href={`${basePath}#featured`}>Elegidos Nexum</Link>
                     </Button>
                   </div>
                 </div>

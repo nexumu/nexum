@@ -16,6 +16,14 @@ import {
 
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Drawer,
   DrawerContent,
   DrawerDescription,
@@ -40,12 +48,19 @@ import {
 } from "@/components/ui/sheet";
 import {
   type CartItem,
+  clearCart,
   getCart,
   removeFromCart,
   setCartItemAmount,
 } from "@/lib/cart";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { type CatalogInfo } from "@/lib/catalog";
+
+type NavbarProps = {
+  company?: string;
+  catalog?: CatalogInfo;
+};
 
 const links = [
   { href: "#new", label: "Recien llegados" },
@@ -73,9 +88,19 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
-export function Navbar() {
+export function Navbar({ company, catalog }: NavbarProps) {
+  const basePath = company ? `/${company}` : "";
+  const homePath = basePath || "/";
+  const searchPath = `${basePath}/search`;
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [address, setAddress] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -137,6 +162,71 @@ export function Navbar() {
   );
   const hasCartItems = cartItems.length > 0;
 
+  const resetCheckoutState = () => {
+    setCheckoutError(null);
+    setCheckoutSuccess(false);
+  };
+
+  const handleCheckout = async () => {
+    const trimmedCustomerName = customerName.trim();
+    const trimmedAddress = address.trim();
+    const trimmedWhatsapp = whatsapp.trim();
+
+    if (!trimmedCustomerName || !trimmedAddress || !trimmedWhatsapp) {
+      setCheckoutError("Completa nombre, direccion y WhatsApp para continuar.");
+      return;
+    }
+
+    if (!hasCartItems) {
+      setCheckoutError("Tu carrito está vacío.");
+      return;
+    }
+
+    setCheckoutSubmitting(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: trimmedCustomerName,
+          address: trimmedAddress,
+          whatsapp: trimmedWhatsapp,
+          shippingCost: 0,
+          source: "checkout",
+          items: cartItems,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setCheckoutError(payload.error ?? "No pudimos registrar tu pedido.");
+        return;
+      }
+
+      clearCart();
+      setCheckoutSuccess(true);
+      setCustomerName("");
+      setAddress("");
+      setWhatsapp("");
+
+      window.setTimeout(() => {
+        setCheckoutOpen(false);
+        setCartOpen(false);
+        setCheckoutSuccess(false);
+      }, 1200);
+    } catch (error) {
+      console.error(error);
+      setCheckoutError("No pudimos registrar tu pedido. Intentá nuevamente.");
+    } finally {
+      setCheckoutSubmitting(false);
+    }
+  };
+
   const showPreviousAnnouncement = () => {
     setAnnouncementIndex((current) =>
       current === 0 ? announcementMessages.length - 1 : current - 1
@@ -189,10 +279,10 @@ export function Navbar() {
           )}
         >
           <Link
-            href="/"
+            href={homePath}
             className="inline-flex items-center mr-4 gap-2 rounded-md px-1 py-1 text-sm font-semibold tracking-[0.18em] uppercase text-foreground"
           >
-            Nexum
+            {catalog?.username || "Nexum"}
           </Link>
 
           <NavigationMenu viewport={false} className="hidden md:flex">
@@ -203,7 +293,10 @@ export function Navbar() {
                     asChild
                     className="rounded-full px-4 py-2 text-foreground/90 hover:bg-primary/12 hover:text-foreground"
                   >
-                    <Link href={link.href} className="text-[13px] tracking-[0.08em] uppercase">
+                    <Link
+                      href={`${homePath}${link.href}`}
+                      className="text-[13px] tracking-[0.08em] uppercase"
+                    >
                       {link.label}
                     </Link>
                   </NavigationMenuLink>
@@ -262,7 +355,7 @@ export function Navbar() {
                             Todavia no agregaste productos.
                           </p>
                           <Button asChild type="button" className="w-full">
-                            <Link href="#new" onClick={() => setCartOpen(false)}>
+                            <Link href={`${homePath}#new`} onClick={() => setCartOpen(false)}>
                               Explorar productos
                             </Link>
                           </Button>
@@ -373,11 +466,19 @@ export function Navbar() {
                             <span>Total</span>
                             <span>{formatPrice(cartTotal)}</span>
                           </div>
-                          <Button type="button">Finalizar pedido</Button>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              resetCheckoutState();
+                              setCheckoutOpen(true);
+                            }}
+                          >
+                            Finalizar pedido
+                          </Button>
                         </>
                       ) : (
                         <Button asChild type="button" variant="outline">
-                          <Link href="#new" onClick={() => setCartOpen(false)}>
+                          <Link href={`${homePath}#new`} onClick={() => setCartOpen(false)}>
                             Explorar
                           </Link>
                         </Button>
@@ -404,7 +505,7 @@ export function Navbar() {
                         Explora productos y seleccionados de la tienda.
                       </SheetDescription>
                     </SheetHeader>
-                    <form action="/search" method="GET" className="mb-6 flex gap-2">
+                    <form action={searchPath} method="GET" className="mb-6 flex gap-2">
                       <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -425,7 +526,7 @@ export function Navbar() {
                           variant="ghost"
                           className="justify-start text-base"
                         >
-                          <Link href={link.href}>{link.label}</Link>
+                          <Link href={`${homePath}${link.href}`}>{link.label}</Link>
                         </Button>
                       ))}
                     </nav>
@@ -444,7 +545,7 @@ export function Navbar() {
               : "pointer-events-none translate-y-2 opacity-0"
           )}
         >
-          <form action="/search" method="GET" className="flex w-full items-center gap-2">
+          <form action={searchPath} method="GET" className="flex w-full items-center gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -479,6 +580,85 @@ export function Navbar() {
           </form>
         </div>
       </div>
+
+      <Dialog
+        open={checkoutOpen}
+        onOpenChange={(open) => {
+          setCheckoutOpen(open);
+          if (!open) {
+            resetCheckoutState();
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Completa tus datos para confirmar</DialogTitle>
+            <DialogDescription>
+              Tu pedido quedara registrado al instante y nuestro equipo se va a comunicar por WhatsApp para coordinar el pago y la entrega de forma personalizada.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3">
+            <label className="text-sm font-medium">
+              Nombre
+              <Input
+                value={customerName}
+                onChange={(event) => setCustomerName(event.target.value)}
+                placeholder="Tu nombre"
+                disabled={checkoutSubmitting}
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Direccion
+              <Input
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+                placeholder="Calle, número, localidad"
+                disabled={checkoutSubmitting}
+              />
+            </label>
+            <label className="text-sm font-medium">
+              WhatsApp
+              <Input
+                value={whatsapp}
+                onChange={(event) => setWhatsapp(event.target.value)}
+                placeholder="+54 9 ..."
+                disabled={checkoutSubmitting}
+              />
+            </label>
+
+            {checkoutError ? (
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {checkoutError}
+              </p>
+            ) : null}
+
+            {checkoutSuccess ? (
+              <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
+                Pedido confirmado. Te vamos a contactar enseguida para coordinar el pago.
+              </p>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCheckoutOpen(false)}
+              disabled={checkoutSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCheckout}
+              disabled={checkoutSubmitting || checkoutSuccess}
+            >
+              {checkoutSubmitting ? "Guardando..." : "Confirmar pedido"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

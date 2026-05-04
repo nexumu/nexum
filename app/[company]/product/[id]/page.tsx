@@ -7,13 +7,14 @@ import { getProductById, getSimilarProducts } from "@/lib/firebase/products";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductPage({
+export default async function CompanyProductPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ company: string; id: string }>;
 }) {
-  const { id } = await params;
-  const catalog = await getCatalogInfo("nexum");
+  const { company: companyRaw, id } = await params;
+  const company = companyRaw.trim().toLowerCase();
+  const catalog = await getCatalogInfo(company);
   const product = await getProductById(id);
 
   if (!product) {
@@ -24,9 +25,13 @@ export default async function ProductPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar catalog={catalog} />
+      <Navbar company={company} catalog={catalog} />
       <main className="pb-20">
-        <ProductShowcaseSection product={product} similarProducts={similarProducts} />
+        <ProductShowcaseSection
+          product={product}
+          similarProducts={similarProducts}
+          company={company}
+        />
       </main>
     </div>
   );

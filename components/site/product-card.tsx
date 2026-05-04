@@ -36,6 +36,10 @@ export type ProductCardData = {
 
 type ProductCardProps = ProductCardData;
 
+type ProductCardNavigationProps = {
+  company?: string;
+};
+
 const variantTypeLabel: Record<NonNullable<ProductCardData["variantType"]>, string> = {
   talle: "Talle",
   color: "Color",
@@ -63,8 +67,11 @@ export function ProductCard({
   isFeatured,
   variantType,
   variants,
-}: ProductCardProps) {
+  company,
+}: ProductCardProps & ProductCardNavigationProps) {
   const router = useRouter();
+  const basePath = company ? `/${company}` : "";
+  const productPath = `${basePath}/product/${id}`;
   const hasVariants = Boolean(variantType && variants?.length);
   const firstVariant = hasVariants ? variants?.[0] : undefined;
   const [selectedVariantId, setSelectedVariantId] = useState(firstVariant?.id ?? "");
@@ -110,7 +117,7 @@ export function ProductCard({
       role="link"
       tabIndex={0}
       aria-label={`Ver detalle de ${name}`}
-      onClick={() => router.push(`/product/${id}`)}
+      onClick={() => router.push(productPath)}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) {
           return;
@@ -118,7 +125,7 @@ export function ProductCard({
 
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          router.push(`/product/${id}`);
+          router.push(productPath);
         }
       }}
     >
