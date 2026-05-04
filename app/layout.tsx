@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: "Nexum | Hogar y bebidas",
   description:
     "Tienda Nexum de vasos, termitos, termos y accesorios para el hogar.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

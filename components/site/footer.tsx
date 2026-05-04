@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { type CatalogInfo } from "@/lib/catalog";
 
 const shopLinks = [
@@ -40,10 +41,7 @@ export function Footer({ company, catalog }: FooterProps) {
             href={homePath}
             className="inline-flex items-center gap-2 text-sm font-semibold tracking-[0.18em] uppercase"
           >
-            <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
-              N
-            </span>
-            {catalog?.username || "Nexum"}
+            {catalog?.username ? catalog.username : <Image src="/logo.png" alt="Nexum" width={100} height={32} className="h-16 w-auto object-contain" />}
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
             {catalog?.description ||

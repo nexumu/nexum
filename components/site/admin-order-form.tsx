@@ -92,7 +92,7 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
   const applyVariantToItem = (index: number, product: ProductCardData, variantId: string) => {
     const variant = product.variants?.find((v) => v.id === variantId);
     if (!variant) return;
-    
+
     setItems((current) =>
       current.map((item, itemIndex) => {
         if (itemIndex !== index) return item;
@@ -446,14 +446,14 @@ function OrderItemRow({
             className="mt-1 bg-background"
           />
         </label>
-        
+
         <div className="flex items-end justify-end pt-2 xl:pt-0 h-10">
           <Button
             type="button"
             variant="destructive"
             onClick={onRemove}
             disabled={!canRemove}
-            className="w-full flex-shrink-0 bg-red-600 hover:bg-red-700 text-white"
+            className="w-full shrink-0 bg-red-600 hover:bg-red-700 text-white"
             title="Eliminar producto"
           >
             <Trash2 className="mr-2 h-4 w-4" />

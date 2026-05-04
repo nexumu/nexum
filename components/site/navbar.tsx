@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -282,7 +283,7 @@ export function Navbar({ company, catalog }: NavbarProps) {
             href={homePath}
             className="inline-flex items-center mr-4 gap-2 rounded-md px-1 py-1 text-sm font-semibold tracking-[0.18em] uppercase text-foreground"
           >
-            {catalog?.username || "Nexum"}
+            {catalog?.username ? catalog.username : <Image src="/logo.png" alt="Nexum" width={100} height={32} className="h-12 w-auto object-contain" />}
           </Link>
 
           <NavigationMenu viewport={false} className="hidden md:flex">
