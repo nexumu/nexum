@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getAllOrders } from "@/lib/firebase/orders";
+import { getAllProducts } from "@/lib/firebase/products";
 import type { OrderStatus } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -51,17 +52,19 @@ function getStatusBadgeClasses(status: OrderStatus) {
 
 export default async function AdminOrdersPage() {
   const orders = await getAllOrders();
+  const products = await getAllProducts();
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold">Pedidos</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Administra pedidos y agrega nuevos registros de forma manual.
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Pedidos</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Administra pedidos y agrega nuevos registros de forma manual.
+          </p>
+        </div>
+        <AdminOrderForm products={products} />
       </header>
-
-      <AdminOrderForm />
 
       <section className="grid gap-4">
         <h2 className="text-lg font-semibold">Listado de pedidos</h2>

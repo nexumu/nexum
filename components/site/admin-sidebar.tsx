@@ -60,7 +60,7 @@ export function AdminSidebar() {
         className="mt-auto justify-start gap-3"
       >
         <LogOut className="h-4 w-4" />
-        Logout
+        Cerrar sesión
       </Button>
     </aside>
   );

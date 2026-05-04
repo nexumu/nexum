@@ -374,84 +374,84 @@ export function Navbar({ company, catalog }: NavbarProps) {
                                 key={identity}
                                 className="flex flex-col gap-2 border-b border-border/60 pb-3"
                               >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-sm font-semibold">{item.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {label}: {value}
-                                  </p>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold">{item.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {label}: {value}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-muted-foreground"
+                                    aria-label="Remove item"
+                                    onClick={() =>
+                                      removeFromCart(
+                                        item.id,
+                                        item.size,
+                                        item.optionType,
+                                        item.optionValue
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="size-3" />
+                                  </Button>
                                 </div>
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 text-muted-foreground"
-                                  aria-label="Remove item"
-                                  onClick={() =>
-                                    removeFromCart(
-                                      item.id,
-                                      item.size,
-                                      item.optionType,
-                                      item.optionValue
-                                    )
-                                  }
-                                >
-                                  <Trash2 className="size-3" />
-                                </Button>
-                              </div>
 
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-1 rounded-full border border-border/60">
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7"
-                                    aria-label="Decrease quantity"
-                                    disabled={item.amount <= 1}
-                                    onClick={() =>
-                                      setCartItemAmount(
-                                        item.id,
-                                        item.size,
-                                        item.amount - 1,
-                                        item.optionType,
-                                        item.optionValue
-                                      )
-                                    }
-                                  >
-                                    <Minus className="size-3" />
-                                  </Button>
-                                  <span className="min-w-6 text-center text-xs font-semibold">
-                                    {item.amount}
-                                  </span>
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7"
-                                    aria-label="Increase quantity"
-                                    onClick={() =>
-                                      setCartItemAmount(
-                                        item.id,
-                                        item.size,
-                                        item.amount + 1,
-                                        item.optionType,
-                                        item.optionValue
-                                      )
-                                    }
-                                  >
-                                    <Plus className="size-3" />
-                                  </Button>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-1 rounded-full border border-border/60">
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7"
+                                      aria-label="Decrease quantity"
+                                      disabled={item.amount <= 1}
+                                      onClick={() =>
+                                        setCartItemAmount(
+                                          item.id,
+                                          item.size,
+                                          item.amount - 1,
+                                          item.optionType,
+                                          item.optionValue
+                                        )
+                                      }
+                                    >
+                                      <Minus className="size-3" />
+                                    </Button>
+                                    <span className="min-w-6 text-center text-xs font-semibold">
+                                      {item.amount}
+                                    </span>
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7"
+                                      aria-label="Increase quantity"
+                                      onClick={() =>
+                                        setCartItemAmount(
+                                          item.id,
+                                          item.size,
+                                          item.amount + 1,
+                                          item.optionType,
+                                          item.optionValue
+                                        )
+                                      }
+                                    >
+                                      <Plus className="size-3" />
+                                    </Button>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-muted-foreground">
+                                      {formatPrice(item.price)} x {item.amount}
+                                    </p>
+                                    <p className="text-sm font-semibold">
+                                      {formatPrice(item.price * item.amount)}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatPrice(item.price)} x {item.amount}
-                                  </p>
-                                  <p className="text-sm font-semibold">
-                                    {formatPrice(item.price * item.amount)}
-                                  </p>
-                                </div>
-                              </div>
                               </div>
                             );
                           })}
@@ -622,7 +622,7 @@ export function Navbar({ company, catalog }: NavbarProps) {
               <Input
                 value={whatsapp}
                 onChange={(event) => setWhatsapp(event.target.value)}
-                placeholder="+54 9 ..."
+                placeholder="+598 ..."
                 disabled={checkoutSubmitting}
               />
             </label>
