@@ -48,6 +48,8 @@ const variantTypeLabel: Record<NonNullable<ProductCardData["variantType"]>, stri
   otro: "Variante",
 };
 
+const fallbackSizes = ["XS", "S", "M", "L", "XL"];
+
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -73,16 +75,29 @@ export function ProductCard({
   const basePath = company ? `/${company}` : "";
   const productPath = `${basePath}/product/${id}`;
   const hasVariants = Boolean(variantType && variants?.length);
-  const firstVariant = hasVariants ? variants?.[0] : undefined;
-  const [selectedVariantId, setSelectedVariantId] = useState(firstVariant?.id ?? "");
+  const optionType = hasVariants ? variantType ?? "otro" : "talle";
+  const optionLabel = hasVariants
+    ? variantTypeLabel[variantType ?? "otro"]
+    : "Talle";
+  const optionValues = hasVariants
+    ? (variants ?? []).map((variant) => variant.value)
+    : fallbackSizes;
+
+  const [selectedOption, setSelectedOption] = useState(
+    optionValues.find(Boolean) ?? ""
+  );
 
   const selectedVariant = useMemo(() => {
     if (!hasVariants) {
       return null;
     }
 
-    return variants?.find((variant) => variant.id === selectedVariantId) ?? firstVariant ?? null;
-  }, [firstVariant, hasVariants, selectedVariantId, variants]);
+    return (
+      variants?.find((variant) => variant.value === selectedOption) ??
+      variants?.[0] ??
+      null
+    );
+  }, [hasVariants, selectedOption, variants]);
 
   const pricing = useMemo(() => {
     const basePrice = selectedVariant?.price ?? price;
@@ -97,17 +112,14 @@ export function ProductCard({
   }, [discountPercent, price, selectedVariant]);
 
   const handleAddToCart = () => {
-    const optionType = variantType ?? "talle";
-    const optionValue = selectedVariant?.value ?? "Unico";
-
     addToCart({
       id,
       name,
       price: pricing.discountedPrice,
       amount: 1,
-      size: optionValue,
+      size: selectedOption,
       optionType,
-      optionValue,
+      optionValue: selectedOption,
     });
   };
 
@@ -177,28 +189,26 @@ export function ProductCard({
           )}
         </div>
 
-        {hasVariants && variantType && (
-          <div className="space-y-1.5" onClick={(event) => event.stopPropagation()}>
-            <label
-              htmlFor={`product-variant-${id}`}
-              className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-            >
-              {variantTypeLabel[variantType]}
-            </label>
-            <select
-              id={`product-variant-${id}`}
-              value={selectedVariantId}
-              onChange={(event) => setSelectedVariantId(event.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {variants?.map((variant) => (
-                <option key={variant.id} value={variant.id}>
-                  {variant.value}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="space-y-1.5" onClick={(event) => event.stopPropagation()}>
+          <label
+            htmlFor={`product-variant-${id}`}
+            className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+          >
+            {optionLabel}
+          </label>
+          <select
+            id={`product-variant-${id}`}
+            value={selectedOption}
+            onChange={(event) => setSelectedOption(event.target.value)}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {optionValues.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <Button
           type="button"
