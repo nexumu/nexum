@@ -39,44 +39,46 @@ export function normalizeOrderItems(items: unknown): OrderProduct[] {
     return [];
   }
 
-  return items
-    .map((item) => {
-      if (!item || typeof item !== "object") {
-        return null;
-      }
+  const normalized: OrderProduct[] = [];
 
-      const source = item as Partial<OrderProduct>;
-      const id = String(source.id ?? "").trim();
-      const name = String(source.name ?? "").trim();
-      const size = String(source.size ?? "").trim();
-      const optionValue = String(source.optionValue ?? "").trim();
-      const price = Number(source.price ?? 0);
-      const amount = Math.max(1, Math.floor(Number(source.amount ?? 1)));
+  for (const item of items) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
 
-      if (!id || !name || !Number.isFinite(price) || price < 0) {
-        return null;
-      }
+    const source = item as Partial<OrderProduct>;
+    const id = String(source.id ?? "").trim();
+    const name = String(source.name ?? "").trim();
+    const size = String(source.size ?? "").trim();
+    const optionValue = String(source.optionValue ?? "").trim();
+    const price = Number(source.price ?? 0);
+    const amount = Math.max(1, Math.floor(Number(source.amount ?? 1)));
 
-      const optionType =
-        source.optionType === "talle" ||
-        source.optionType === "color" ||
-        source.optionType === "tamano" ||
-        source.optionType === "material" ||
-        source.optionType === "otro"
-          ? source.optionType
-          : undefined;
+    if (!id || !name || !Number.isFinite(price) || price < 0) {
+      continue;
+    }
 
-      return {
-        id,
-        name,
-        size,
-        optionType,
-        optionValue: optionValue || size,
-        price,
-        amount,
-      } satisfies OrderProduct;
-    })
-    .filter((item): item is OrderProduct => item !== null);
+    const optionType =
+      source.optionType === "talle" ||
+      source.optionType === "color" ||
+      source.optionType === "tamano" ||
+      source.optionType === "material" ||
+      source.optionType === "otro"
+        ? source.optionType
+        : undefined;
+
+    normalized.push({
+      id,
+      name,
+      size,
+      optionType,
+      optionValue: optionValue || size,
+      price,
+      amount,
+    });
+  }
+
+  return normalized;
 }
 
 export function calculateOrderSubtotal(items: OrderProduct[]) {
