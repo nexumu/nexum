@@ -5,6 +5,7 @@ import {
   addDoc,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   orderBy,
@@ -26,6 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Trash2 } from "lucide-react";
 
 type Subcategory = {
   id: string;
@@ -58,7 +60,12 @@ export default function AdminCategoriesPage() {
   const [subcategoryName, setSubcategoryName] = useState("");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false);
+  const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false);
+  const [deleteSubcategoryDialogOpen, setDeleteSubcategoryDialogOpen] =
+    useState(false);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
+  const [activeSubcategory, setActiveSubcategory] =
+    useState<Subcategory | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const sortedCategories = useMemo(
@@ -127,6 +134,20 @@ export default function AdminCategoriesPage() {
     setSubcategoryDialogOpen(true);
   };
 
+  const openDeleteCategoryDialog = (category: Category) => {
+    setActiveCategory(category);
+    setDeleteCategoryDialogOpen(true);
+  };
+
+  const openDeleteSubcategoryDialog = (
+    category: Category,
+    subcategory: Subcategory
+  ) => {
+    setActiveCategory(category);
+    setActiveSubcategory(subcategory);
+    setDeleteSubcategoryDialogOpen(true);
+  };
+
   const handleCreateSubcategory = async () => {
     const name = subcategoryName.trim();
     if (!name || !activeCategory) return;
@@ -146,6 +167,39 @@ export default function AdminCategoriesPage() {
     } catch (err) {
       console.error(err);
       setError("No se pudo crear la subcategoría.");
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!activeCategory) return;
+    setError(null);
+    try {
+      await deleteDoc(doc(categoriesCollection, activeCategory.id));
+      setDeleteCategoryDialogOpen(false);
+      setActiveCategory(null);
+      fetchCategories();
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo eliminar la categoría.");
+    }
+  };
+
+  const handleDeleteSubcategory = async () => {
+    if (!activeCategory || !activeSubcategory) return;
+    setError(null);
+    try {
+      const nextSubcategories = (activeCategory.subcategories ?? []).filter(
+        (subcategory) => subcategory.id !== activeSubcategory.id
+      );
+      await updateDoc(doc(categoriesCollection, activeCategory.id), {
+        subcategories: nextSubcategories,
+      });
+      setDeleteSubcategoryDialogOpen(false);
+      setActiveSubcategory(null);
+      fetchCategories();
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo eliminar la subcategoría.");
     }
   };
 
@@ -215,13 +269,23 @@ export default function AdminCategoriesPage() {
                       {category.slug}
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => openSubcategoryDialog(category)}
-                  >
-                    Agregar subcategoría
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => openSubcategoryDialog(category)}
+                    >
+                      Agregar subcategoría
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => openDeleteCategoryDialog(category)}
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {category.subcategories && category.subcategories.length > 0 ? (
@@ -231,8 +295,23 @@ export default function AdminCategoriesPage() {
                           key={subcategory.id}
                           className="flex items-center justify-between rounded-md border border-border/70 px-3 py-2"
                         >
-                          <span>{subcategory.name}</span>
-                          <span className="text-xs">{subcategory.slug}</span>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {subcategory.name}
+                            </p>
+                            <p className="truncate text-xs">{subcategory.slug}</p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() =>
+                              openDeleteSubcategoryDialog(category, subcategory)
+                            }
+                            aria-label="Eliminar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </li>
                       ))}
                     </ul>
@@ -283,6 +362,73 @@ export default function AdminCategoriesPage() {
             </Button>
             <Button type="button" onClick={handleCreateSubcategory}>
               Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteCategoryDialogOpen}
+        onOpenChange={setDeleteCategoryDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar categoría</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará la categoría
+              {activeCategory?.name ? ` "${activeCategory.name}"` : ""} y sus
+              subcategorías.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteCategoryDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              aria-label="Eliminar"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteSubcategoryDialogOpen}
+        onOpenChange={setDeleteSubcategoryDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar subcategoría</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará la subcategoría
+              {activeSubcategory?.name
+                ? ` "${activeSubcategory.name}"`
+                : ""}.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteSubcategoryDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteSubcategory}
+              aria-label="Eliminar"
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           </DialogFooter>
         </DialogContent>

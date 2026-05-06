@@ -30,7 +30,7 @@ export default async function AdminProductsPage() {
           ))
         ) : (
           <div className="rounded-lg border border-dashed border-border/70 p-6 text-sm text-muted-foreground">
-            Todavía no hay productos cargados en Firebase.
+            Todavía no hay productos cargados.
           </div>
         )}
       </section>

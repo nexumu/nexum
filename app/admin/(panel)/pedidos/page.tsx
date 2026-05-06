@@ -1,6 +1,7 @@
 import { AdminOrderForm } from "@/components/site/admin-order-form";
 import { AdminOrderStatusSelect } from "@/components/site/admin-order-status-select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -48,6 +49,29 @@ function getStatusBadgeClasses(status: OrderStatus) {
     default:
       return "";
   }
+}
+
+function buildWhatsAppUrl(
+  phone: string | undefined,
+  customerName: string,
+  items: { name: string; amount: number }[]
+) {
+  if (!phone) {
+    return "";
+  }
+
+  const normalizedPhone = phone.replace(/\D/g, "");
+  if (!normalizedPhone) {
+    return "";
+  }
+
+  const productsText = items
+    .map((item) => `${item.name} x${item.amount}`)
+    .join(", ");
+  const message = `Hola ${customerName} te escribo por el pedido realizado en nuestra web de Nexum por los siguientes productos: ${productsText}.`;
+  const encodedMessage = encodeURIComponent(message);
+
+  return `https://wa.me/${normalizedPhone}?text=${encodedMessage}`;
 }
 
 export default async function AdminOrdersPage() {
@@ -112,6 +136,25 @@ export default async function AdminOrdersPage() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                  <div>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-emerald-600 text-white hover:bg-emerald-700"
+                    >
+                      <a
+                        href={buildWhatsAppUrl(
+                          order.whatsapp,
+                          order.customerName,
+                          order.items
+                        )}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Enviar WhatsApp
+                      </a>
+                    </Button>
                   </div>
                   <div className="grid gap-1 text-sm">
                     <p>

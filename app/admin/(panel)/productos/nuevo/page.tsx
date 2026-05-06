@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -26,6 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 
 type ProductFormState = {
   id: string;
@@ -37,6 +39,20 @@ type ProductFormState = {
   isFeatured: boolean;
   categoryName: string;
   subcategoryName: string;
+};
+
+type ImageItem = {
+  id: string;
+  url: string;
+  publicId: string | null;
+  order: number;
+  file?: File;
+};
+
+type ProductImageRecord = {
+  url: string;
+  publicId: string | null;
+  order: number;
 };
 
 type ProductVariantType = "talle" | "color" | "tamano" | "material" | "otro";
@@ -67,6 +83,7 @@ type CategoryOption = {
 };
 
 const categoriesCollection = collection(db, "categories");
+const productsCollection = collection(db, "products");
 
 function createVariantId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -97,14 +114,16 @@ export default function AdminNewProductPage() {
   const [variants, setVariants] = useState<ProductVariantDraft[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const previewUrls = useMemo(
-    () => imageFiles.map((file) => URL.createObjectURL(file)),
-    [imageFiles]
-  );
+  const searchParams = useSearchParams();
+  const productId = searchParams.get("productId");
+  const isEditing = Boolean(productId);
+  const hasLoadedProduct = useRef(false);
+  const originalPublicIdsRef = useRef<string[]>([]);
 
   const updateField = (field: keyof ProductFormState, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -140,9 +159,13 @@ export default function AdminNewProductPage() {
 
   useEffect(() => {
     return () => {
-      previewUrls.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      images.forEach((image) => {
+        if (image.file) {
+          URL.revokeObjectURL(image.url);
+        }
+      });
     };
-  }, [previewUrls]);
+  }, [images]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -170,12 +193,188 @@ export default function AdminNewProductPage() {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    if (!productId || hasLoadedProduct.current) return;
+    hasLoadedProduct.current = true;
+
+    const loadProduct = async () => {
+      setIsLoadingProduct(true);
+      setError(null);
+      try {
+        const docSnap = await getDoc(doc(productsCollection, productId));
+        if (!docSnap.exists()) {
+          setError("No se encontró el producto a editar.");
+          return;
+        }
+
+        const data = docSnap.data() as Record<string, unknown>;
+        const priceValue = Number(data.price ?? 0);
+        const discountValue = data.discountPercent;
+        const normalizedDiscount =
+          discountValue === undefined || discountValue === null
+            ? ""
+            : String(discountValue);
+
+        const nextForm: ProductFormState = {
+          id: String(data.id ?? productId),
+          name: String(data.name ?? ""),
+          description: String(data.description ?? ""),
+          price: Number.isNaN(priceValue) ? "" : String(priceValue),
+          discountPercent: normalizedDiscount,
+          isNew: Boolean(data.isNew),
+          isFeatured: Boolean(data.isFeatured),
+          categoryName: String(data.categoryName ?? ""),
+          subcategoryName: String(data.subcategoryName ?? ""),
+        };
+        setForm(nextForm);
+
+        const rawVariantType = data.variantType;
+        if (
+          rawVariantType === "talle" ||
+          rawVariantType === "color" ||
+          rawVariantType === "tamano" ||
+          rawVariantType === "material" ||
+          rawVariantType === "otro"
+        ) {
+          setVariantType(rawVariantType);
+        }
+
+        const rawVariants = Array.isArray(data.variants)
+          ? data.variants
+          : [];
+        const loadedVariants = rawVariants
+          .map((variant, index) => {
+            if (!variant || typeof variant !== "object") return null;
+            const source = variant as Record<string, unknown>;
+            const value = String(source.value ?? "").trim();
+            const price = String(source.price ?? "").trim();
+            const discountRaw = source.discountPercent;
+            const discount =
+              discountRaw === undefined || discountRaw === null
+                ? ""
+                : String(discountRaw);
+            if (!value) return null;
+            return {
+              id: String(source.id ?? `${productId}-variant-${index}`),
+              value,
+              price,
+              discountPercent: discount,
+            };
+          })
+          .filter((variant): variant is ProductVariantDraft => Boolean(variant));
+        setVariants(loadedVariants);
+
+        const rawImages = Array.isArray(data.images)
+          ? data.images
+          : [];
+        const rawPublicIds = Array.isArray(data.imagePublicIds)
+          ? data.imagePublicIds
+          : [];
+        const rawImageItems = Array.isArray(data.imageItems)
+          ? data.imageItems
+          : [];
+
+        let nextImages: ImageItem[] = [];
+
+        if (rawImageItems.length > 0) {
+          nextImages = rawImageItems
+            .map((item, index) => {
+              if (!item || typeof item !== "object") return null;
+              const source = item as Record<string, unknown>;
+              const url = String(source.url ?? "");
+              if (!url) return null;
+              const order = Number(source.order ?? index);
+              return {
+                id: `existing-${index}-${url}`,
+                url,
+                publicId:
+                  typeof source.publicId === "string" && source.publicId
+                    ? source.publicId
+                    : null,
+                order: Number.isNaN(order) ? index : order,
+              } as ImageItem;
+            })
+            .filter((image): image is ImageItem => Boolean(image))
+            .sort((a, b) => a.order - b.order);
+        } else {
+          const fallbackImages = rawImages.filter(
+            (image): image is string => typeof image === "string" && Boolean(image)
+          );
+          nextImages = fallbackImages.map((url, index) => ({
+            id: `existing-${index}-${url}`,
+            url,
+            publicId:
+              typeof rawPublicIds[index] === "string" ? rawPublicIds[index] : null,
+            order: index,
+          }));
+        }
+
+        setImages(nextImages);
+        originalPublicIdsRef.current = nextImages
+          .map((image) => image.publicId)
+          .filter((publicId): publicId is string => Boolean(publicId));
+      } catch (err) {
+        console.error(err);
+        setError("No se pudo cargar el producto.");
+      } finally {
+        setIsLoadingProduct(false);
+      }
+    };
+
+    loadProduct();
+  }, [productId]);
+
+  const addImages = (files: File[]) => {
+    if (files.length === 0) return;
+    setImages((current) => {
+      const baseOrder = current.length;
+      const next = files.map((file, index) => {
+        const url = URL.createObjectURL(file);
+        return {
+          id: `new-${crypto.randomUUID()}`,
+          url,
+          publicId: null,
+          order: baseOrder + index,
+          file,
+        } as ImageItem;
+      });
+      return [...current, ...next];
+    });
+  };
+
+  const removeImage = (imageId: string) => {
+    setImages((current) => {
+      const target = current.find((image) => image.id === imageId);
+      if (target?.file) {
+        URL.revokeObjectURL(target.url);
+      }
+      return current
+        .filter((image) => image.id !== imageId)
+        .map((image, index) => ({ ...image, order: index }));
+    });
+  };
+
+  const moveImage = (imageId: string, direction: "up" | "down") => {
+    setImages((current) => {
+      const index = current.findIndex((image) => image.id === imageId);
+      if (index < 0) return current;
+      const swapWith = direction === "up" ? index - 1 : index + 1;
+      if (swapWith < 0 || swapWith >= current.length) return current;
+      const next = [...current];
+      const temp = next[index];
+      next[index] = next[swapWith];
+      next[swapWith] = temp;
+      return next.map((image, idx) => ({ ...image, order: idx }));
+    });
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setSuccess(false);
 
     const trimmedId = form.id.trim();
+    const docId = isEditing && productId ? productId : trimmedId;
     const trimmedName = form.name.trim();
     const trimmedDescription = form.description.trim();
     const trimmedPrice = form.price.trim();
@@ -189,7 +388,7 @@ export default function AdminNewProductPage() {
     }));
 
     if (
-      !trimmedId ||
+      !docId ||
       !trimmedName ||
       !trimmedDescription ||
       !form.categoryName ||
@@ -200,7 +399,7 @@ export default function AdminNewProductPage() {
       return;
     }
 
-    if (imageFiles.length === 0) {
+    if (images.length === 0) {
       setError("Seleccioná al menos una imagen para el producto.");
       return;
     }
@@ -237,10 +436,13 @@ export default function AdminNewProductPage() {
 
     startTransition(async () => {
       try {
+        const existingImages = images.filter((image) => !image.file);
+        const newImages = images.filter((image) => image.file);
+
         const uploadResults = await Promise.all(
-          imageFiles.map(async (imageFile) => {
+          newImages.map(async (image) => {
             const uploadData = new FormData();
-            uploadData.append("file", imageFile);
+            uploadData.append("file", image.file as File);
             uploadData.append("folder", "products");
 
             const uploadResponse = await fetch("/api/cloudinary/upload", {
@@ -259,11 +461,53 @@ export default function AdminNewProductPage() {
           })
         );
 
-        const imageUrls = uploadResults.map((result) => result.url);
-        const imagePublicIds = uploadResults.map((result) => result.publicId);
+        let uploadIndex = 0;
+        const mergedImages = images.map((image) => {
+          if (!image.file) {
+            return {
+              url: image.url,
+              publicId: image.publicId,
+              order: image.order,
+            } satisfies ProductImageRecord;
+          }
+          const result = uploadResults[uploadIndex];
+          uploadIndex += 1;
+          if (!result) {
+            throw new Error("Upload mismatch");
+          }
+          return {
+            url: result.url,
+            publicId: result.publicId,
+            order: image.order,
+          } satisfies ProductImageRecord;
+        });
+
+        const orderedImages = mergedImages
+          .slice()
+          .sort((a, b) => a.order - b.order);
+        const imageUrls = orderedImages.map((image) => image.url);
+        const imagePublicIds = orderedImages.map((image) => image.publicId);
+
+        if (isEditing) {
+          const previousPublicIds = originalPublicIdsRef.current;
+          const currentPublicIds = orderedImages
+            .map((image) => image.publicId)
+            .filter((publicId): publicId is string => Boolean(publicId));
+          const removedPublicIds = previousPublicIds.filter(
+            (publicId) => !currentPublicIds.includes(publicId)
+          );
+
+          if (removedPublicIds.length > 0) {
+            await fetch("/api/cloudinary/delete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ publicIds: removedPublicIds }),
+            });
+          }
+        }
 
         const payload: Record<string, unknown> = {
-          id: trimmedId,
+          id: docId,
           name: trimmedName,
           nameLower: trimmedName.toLowerCase(),
           description: trimmedDescription,
@@ -273,11 +517,15 @@ export default function AdminNewProductPage() {
           image: imageUrls[0],
           images: imageUrls,
           imagePublicIds,
+          imageItems: orderedImages,
           categoryName: form.categoryName,
           subcategoryName: form.subcategoryName || null,
-          createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
+
+        if (!isEditing) {
+          payload.createdAt = serverTimestamp();
+        }
 
         if (discountValue !== null) {
           payload.discountPercent = discountValue;
@@ -299,12 +547,12 @@ export default function AdminNewProductPage() {
           });
         }
 
-        await setDoc(doc(db, "products", trimmedId), payload, { merge: true });
+        await setDoc(doc(db, "products", docId), payload, { merge: true });
         setSuccess(true);
         setForm(initialState);
         setVariantType("talle");
         setVariants([]);
-        setImageFiles([]);
+        setImages([]);
         router.push("/admin/productos");
       } catch (submitError) {
         console.error(submitError);
@@ -319,9 +567,13 @@ export default function AdminNewProductPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Productos
         </p>
-        <h1 className="text-2xl font-semibold">Crear nuevo producto</h1>
+        <h1 className="text-2xl font-semibold">
+          {isEditing ? "Editar producto" : "Crear nuevo producto"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Guardá un nuevo producto en Firebase y subí la imagen a Cloudinary.
+          {isEditing
+            ? "Actualizá la información del producto."
+            : "Guardá un nuevo producto."}
         </p>
       </header>
 
@@ -342,6 +594,7 @@ export default function AdminNewProductPage() {
                   onChange={(event) => updateField("id", event.target.value)}
                   placeholder="nocturne-blazer"
                   required
+                  disabled={isEditing}
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm font-medium">
@@ -416,7 +669,7 @@ export default function AdminNewProductPage() {
                   step="0.01"
                   value={form.price}
                   onChange={(event) => updateField("price", event.target.value)}
-                  placeholder="129"
+                  placeholder="500"
                   required
                 />
               </label>
@@ -438,9 +691,9 @@ export default function AdminNewProductPage() {
                   accept="image/*"
                   multiple
                   onChange={(event) =>
-                    setImageFiles(Array.from(event.target.files ?? []))
+                    addImages(Array.from(event.target.files ?? []))
                   }
-                  required
+                  required={!isEditing}
                 />
               </label>
             </div>
@@ -495,12 +748,12 @@ export default function AdminNewProductPage() {
                             variantType === "talle"
                               ? "M"
                               : variantType === "color"
-                              ? "Negro"
-                              : variantType === "tamano"
-                              ? "500 ml"
-                              : variantType === "material"
-                              ? "Cuero"
-                              : "Valor"
+                                ? "Negro"
+                                : variantType === "tamano"
+                                  ? "500 ml"
+                                  : variantType === "material"
+                                    ? "Cuero"
+                                    : "Valor"
                           }
                         />
                       </label>
@@ -515,7 +768,7 @@ export default function AdminNewProductPage() {
                           onChange={(event) =>
                             updateVariantField(variant.id, "price", event.target.value)
                           }
-                          placeholder={form.price || "129"}
+                          placeholder={form.price || "150"}
                         />
                       </label>
 
@@ -554,21 +807,61 @@ export default function AdminNewProductPage() {
               )}
             </div>
 
-            {previewUrls.length > 0 ? (
+            {images.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Vista previa ({previewUrls.length})
+                  Vista previa ({images.length})
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {previewUrls.map((previewUrl, index) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={`${previewUrl}-${index}`}
-                      src={previewUrl}
-                      alt={`Vista previa ${index + 1}`}
-                      className="h-48 w-full rounded-md border border-border/70 object-cover"
-                    />
-                  ))}
+                  {images
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((image, index) => (
+                      <div
+                        key={image.id}
+                        className="rounded-md border border-border/70 p-2"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={image.url}
+                          alt={`Vista previa ${index + 1}`}
+                          className="h-40 w-full rounded-md object-cover"
+                        />
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={() => moveImage(image.id, "up")}
+                              disabled={index === 0}
+                              aria-label="Mover arriba"
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={() => moveImage(image.id, "down")}
+                              disabled={index === images.length - 1}
+                              aria-label="Mover abajo"
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            onClick={() => removeImage(image.id)}
+                            aria-label="Eliminar imagen"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             ) : null}
@@ -602,7 +895,9 @@ export default function AdminNewProductPage() {
 
             {success ? (
               <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
-                Producto creado correctamente.
+                {isEditing
+                  ? "Producto actualizado correctamente."
+                  : "Producto creado correctamente."}
               </p>
             ) : null}
 
@@ -610,8 +905,12 @@ export default function AdminNewProductPage() {
               <Button type="button" variant="ghost" asChild>
                 <Link href="/admin/productos">Cancelar</Link>
               </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Guardando..." : "Guardar producto"}
+              <Button type="submit" disabled={isPending || isLoadingProduct}>
+                {isPending
+                  ? "Guardando..."
+                  : isEditing
+                    ? "Actualizar producto"
+                    : "Guardar producto"}
               </Button>
             </CardFooter>
           </form>

@@ -219,9 +219,8 @@ export function Navbar({ company, catalog }: NavbarProps) {
         setCheckoutOpen(false);
         setCartOpen(false);
         setCheckoutSuccess(false);
-      }, 1200);
+      }, 12000);
     } catch (error) {
-      console.error(error);
       setCheckoutError("No pudimos registrar tu pedido. Intentá nuevamente.");
     } finally {
       setCheckoutSubmitting(false);
