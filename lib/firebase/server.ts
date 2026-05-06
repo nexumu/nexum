@@ -2,12 +2,13 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyADuG8ukoUAO5DH0pk5aQEKq0bppKFtrcs",
-  authDomain: "e-commerce-test-b9da4.firebaseapp.com",
-  projectId: "e-commerce-test-b9da4",
-  storageBucket: "e-commerce-test-b9da4.firebasestorage.app",
-  messagingSenderId: "239853411541",
-  appId: "1:239853411541:web:1ffd2b2bf3efb72baed65c"
+  apiKey: "AIzaSyC-nOS5fyhai4fcHBnDYDYOOEFNBQ1FuOM",
+  authDomain: "nexum-737c3.firebaseapp.com",
+  projectId: "nexum-737c3",
+  storageBucket: "nexum-737c3.firebasestorage.app",
+  messagingSenderId: "689132608029",
+  appId: "1:689132608029:web:4624f56cd616bfc03604f4",
+  measurementId: "G-6LK5BFPXV9"
 };
 
 const missingKeys = Object.entries(firebaseConfig)
