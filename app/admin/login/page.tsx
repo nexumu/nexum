@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Ingreso admin</CardTitle>
@@ -55,6 +55,7 @@ export default function AdminLoginPage() {
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 placeholder="admin"
+                className="h-11"
                 required
               />
             </div>
@@ -70,13 +71,14 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••"
+                className="h-11"
                 required
               />
             </div>
             {error ? (
               <p className="text-sm text-destructive">{error}</p>
             ) : null}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
               {isSubmitting ? "Ingresando..." : "Entrar"}
             </Button>
           </form>

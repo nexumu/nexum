@@ -18,7 +18,7 @@ export default async function AdminProductsPage() {
             Gestiona tu catálogo y edita los productos publicados.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/productos/nuevo">Agregar un producto</Link>
         </Button>
       </header>

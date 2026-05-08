@@ -563,12 +563,12 @@ export default function AdminNewProductPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Productos
-        </p>
-        <h1 className="text-2xl font-semibold">
-          {isEditing ? "Editar producto" : "Crear nuevo producto"}
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Productos
+          </p>
+          <h1 className="text-2xl font-semibold">
+            {isEditing ? "Editar producto" : "Crear nuevo producto"}
         </h1>
         <p className="text-sm text-muted-foreground">
           {isEditing
@@ -595,6 +595,7 @@ export default function AdminNewProductPage() {
                   placeholder="nocturne-blazer"
                   required
                   disabled={isEditing}
+                  className="h-11"
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm font-medium">
@@ -604,6 +605,7 @@ export default function AdminNewProductPage() {
                   onChange={(event) => updateField("name", event.target.value)}
                   placeholder="Nocturne Blazer"
                   required
+                  className="h-11"
                 />
               </label>
             </div>
@@ -615,6 +617,7 @@ export default function AdminNewProductPage() {
                 onChange={(event) => updateField("description", event.target.value)}
                 placeholder="Detalle corto del producto."
                 required
+                className="min-h-28"
               />
             </label>
 
@@ -628,7 +631,7 @@ export default function AdminNewProductPage() {
                     updateField("subcategoryName", "");
                   }}
                   required
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  className="h-11 rounded-md border border-input bg-background px-3 text-sm"
                 >
                   <option value="">Seleccioná una categoría</option>
                   {categories.map((category) => (
@@ -646,7 +649,7 @@ export default function AdminNewProductPage() {
                     updateField("subcategoryName", event.target.value)
                   }
                   disabled={!form.categoryName}
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-11 rounded-md border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <option value="">Sin subcategoría</option>
                   {categories
@@ -671,6 +674,7 @@ export default function AdminNewProductPage() {
                   onChange={(event) => updateField("price", event.target.value)}
                   placeholder="500"
                   required
+                  className="h-11"
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm font-medium">
@@ -678,10 +682,11 @@ export default function AdminNewProductPage() {
                 <Input
                   type="number"
                   min="0"
-                  step="1"
+                  step="0.01"
                   value={form.discountPercent}
                   onChange={(event) => updateField("discountPercent", event.target.value)}
                   placeholder="15"
+                  className="h-11"
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm font-medium">
@@ -694,6 +699,7 @@ export default function AdminNewProductPage() {
                     addImages(Array.from(event.target.files ?? []))
                   }
                   required={!isEditing}
+                  className="h-11"
                 />
               </label>
             </div>
@@ -707,7 +713,7 @@ export default function AdminNewProductPage() {
                   </p>
                 </div>
 
-                <div className="flex items-end gap-2">
+                <div className="flex flex-wrap items-end gap-2">
                   <label className="flex flex-col gap-2 text-sm font-medium">
                     Tipo de variante
                     <select
@@ -715,7 +721,7 @@ export default function AdminNewProductPage() {
                       onChange={(event) =>
                         setVariantType(event.target.value as ProductVariantType)
                       }
-                      className="h-10 min-w-40 rounded-md border border-input bg-background px-3 text-sm"
+                      className="h-11 min-w-40 rounded-md border border-input bg-background px-3 text-sm"
                     >
                       <option value="talle">Talle</option>
                       <option value="color">Color</option>
@@ -724,7 +730,12 @@ export default function AdminNewProductPage() {
                       <option value="otro">Otro</option>
                     </select>
                   </label>
-                  <Button type="button" variant="outline" onClick={addVariant}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addVariant}
+                    className="w-full sm:w-auto"
+                  >
                     Agregar variante
                   </Button>
                 </div>
@@ -753,8 +764,9 @@ export default function AdminNewProductPage() {
                                   ? "500 ml"
                                   : variantType === "material"
                                     ? "Cuero"
-                                    : "Valor"
+                              : "Valor"
                           }
+                          className="h-11"
                         />
                       </label>
 
@@ -769,6 +781,7 @@ export default function AdminNewProductPage() {
                             updateVariantField(variant.id, "price", event.target.value)
                           }
                           placeholder={form.price || "150"}
+                          className="h-11"
                         />
                       </label>
 
@@ -777,7 +790,7 @@ export default function AdminNewProductPage() {
                         <Input
                           type="number"
                           min="0"
-                          step="1"
+                          step="0.01"
                           value={variant.discountPercent}
                           onChange={(event) =>
                             updateVariantField(
@@ -787,6 +800,7 @@ export default function AdminNewProductPage() {
                             )
                           }
                           placeholder={form.discountPercent || "0"}
+                          className="h-11"
                         />
                       </label>
 
@@ -794,6 +808,7 @@ export default function AdminNewProductPage() {
                         type="button"
                         variant="ghost"
                         onClick={() => removeVariant(variant.id)}
+                        className="w-full sm:w-auto"
                       >
                         Eliminar
                       </Button>
@@ -905,7 +920,11 @@ export default function AdminNewProductPage() {
               <Button type="button" variant="ghost" asChild>
                 <Link href="/admin/productos">Cancelar</Link>
               </Button>
-              <Button type="submit" disabled={isPending || isLoadingProduct}>
+              <Button
+                type="submit"
+                disabled={isPending || isLoadingProduct}
+                className="w-full sm:w-auto"
+              >
                 {isPending
                   ? "Guardando..."
                   : isEditing

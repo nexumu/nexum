@@ -214,9 +214,9 @@ export default function AdminCategoriesPage() {
         </div>
         <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Agregar categoría</Button>
+            <Button className="w-full sm:w-auto">Agregar categoría</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] w-[95vw] max-w-lg overflow-y-auto sm:w-full">
             <DialogHeader>
               <DialogTitle>Nueva categoría</DialogTitle>
               <DialogDescription>
@@ -230,18 +230,20 @@ export default function AdminCategoriesPage() {
                   value={categoryName}
                   onChange={(event) => setCategoryName(event.target.value)}
                   placeholder="Abrigos"
+                  className="mt-1 h-11"
                 />
               </label>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setCategoryDialogOpen(false)}
+                className="w-full sm:w-auto"
               >
                 Cancelar
               </Button>
-              <Button type="button" onClick={handleCreateCategory}>
+              <Button type="button" onClick={handleCreateCategory} className="w-full sm:w-auto">
                 Guardar
               </Button>
             </DialogFooter>
@@ -269,23 +271,25 @@ export default function AdminCategoriesPage() {
                       {category.slug}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => openSubcategoryDialog(category)}
-                    >
-                      Agregar subcategoría
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => openDeleteCategoryDialog(category)}
-                      aria-label="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => openSubcategoryDialog(category)}
+                        className="w-full sm:w-auto"
+                      >
+                        Agregar subcategoría
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => openDeleteCategoryDialog(category)}
+                        aria-label="Eliminar"
+                        className="w-full sm:w-auto"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {category.subcategories && category.subcategories.length > 0 ? (
@@ -335,7 +339,7 @@ export default function AdminCategoriesPage() {
         open={subcategoryDialogOpen}
         onOpenChange={setSubcategoryDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] w-[95vw] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Nueva subcategoría</DialogTitle>
             <DialogDescription>
@@ -349,18 +353,20 @@ export default function AdminCategoriesPage() {
                 value={subcategoryName}
                 onChange={(event) => setSubcategoryName(event.target.value)}
                 placeholder="Abrigos livianos"
+                className="mt-1 h-11"
               />
             </label>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setSubcategoryDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="button" onClick={handleCreateSubcategory}>
+            <Button type="button" onClick={handleCreateSubcategory} className="w-full sm:w-auto">
               Guardar
             </Button>
           </DialogFooter>
@@ -371,7 +377,7 @@ export default function AdminCategoriesPage() {
         open={deleteCategoryDialogOpen}
         onOpenChange={setDeleteCategoryDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] w-[95vw] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Eliminar categoría</DialogTitle>
             <DialogDescription>
@@ -380,11 +386,12 @@ export default function AdminCategoriesPage() {
               subcategorías.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setDeleteCategoryDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
@@ -393,6 +400,7 @@ export default function AdminCategoriesPage() {
               variant="destructive"
               onClick={handleDeleteCategory}
               aria-label="Eliminar"
+              className="w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -404,7 +412,7 @@ export default function AdminCategoriesPage() {
         open={deleteSubcategoryDialogOpen}
         onOpenChange={setDeleteSubcategoryDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] w-[95vw] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Eliminar subcategoría</DialogTitle>
             <DialogDescription>
@@ -414,11 +422,12 @@ export default function AdminCategoriesPage() {
                 : ""}.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setDeleteSubcategoryDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
@@ -427,6 +436,7 @@ export default function AdminCategoriesPage() {
               variant="destructive"
               onClick={handleDeleteSubcategory}
               aria-label="Eliminar"
+              className="w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

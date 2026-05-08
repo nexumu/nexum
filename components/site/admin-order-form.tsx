@@ -214,12 +214,12 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="w-fit">
+        <Button className="w-full sm:w-fit">
           <Plus className="mr-2 h-4 w-4" />
           Agregar pedido manual
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] w-[95vw] max-w-4xl overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle>Agregar pedido manual</DialogTitle>
           <DialogDescription>
@@ -235,7 +235,7 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
                 value={form.customerName}
                 onChange={(event) => updateField("customerName", event.target.value)}
                 placeholder="Nombre del cliente"
-                className="mt-1"
+                className="mt-1 h-11"
               />
             </label>
             <label className="text-sm font-medium">
@@ -244,7 +244,7 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
                 value={form.whatsapp}
                 onChange={(event) => updateField("whatsapp", event.target.value)}
                 placeholder="+598 ..."
-                className="mt-1"
+                className="mt-1 h-11"
               />
             </label>
           </div>
@@ -256,7 +256,7 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
                 value={form.address}
                 onChange={(event) => updateField("address", event.target.value)}
                 placeholder="Calle, numero, localidad"
-                className="mt-1"
+                className="mt-1 h-11"
               />
             </label>
             <label className="text-sm font-medium">
@@ -268,15 +268,21 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
                 value={form.shippingCost}
                 onChange={(event) => updateField("shippingCost", event.target.value)}
                 placeholder="0"
-                className="mt-1"
+                className="mt-1 h-11"
               />
             </label>
           </div>
 
           <div className="grid gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-semibold">Productos del pedido</p>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addItem}
+                className="w-full sm:w-auto"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Agregar producto
               </Button>
@@ -310,7 +316,12 @@ export function AdminOrderForm({ products }: { products: ProductCardData[] }) {
           ) : null}
 
           <div className="flex justify-end pt-4">
-            <Button type="button" onClick={handleSubmit} disabled={isPending}>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isPending}
+              className="w-full sm:w-auto"
+            >
               {isPending ? "Guardando..." : "Guardar pedido"}
             </Button>
           </div>
@@ -353,13 +364,13 @@ function OrderItemRow({
                 variant="outline"
                 role="combobox"
                 aria-expanded={openCombobox}
-                className="w-full justify-between bg-background"
+                className="w-full justify-between bg-background h-11"
               >
                 {selectedProduct ? selectedProduct.name : "Seleccionar producto..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] sm:w-[400px] p-0" align="start">
+            <PopoverContent className="w-[min(90vw,400px)] p-0" align="start">
               <Command>
                 <CommandInput placeholder="Buscar por nombre o ID..." />
                 <CommandList>
@@ -395,13 +406,17 @@ function OrderItemRow({
 
         {selectedProduct?.variants && selectedProduct.variants.length > 0 && (
           <div className="flex-1 space-y-2">
-            <label className="text-sm font-medium">Variante ({selectedProduct.variantType || "talle"})</label>
+            <label className="text-sm font-medium">
+              Variante ({selectedProduct.variantType || "talle"})
+            </label>
             <select
               value={item.selectedVariantId || ""}
               onChange={(e) => onSelectVariant(selectedProduct, e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="" disabled>Seleccionar variante...</option>
+              <option value="" disabled>
+                Seleccionar variante...
+              </option>
               {selectedProduct.variants.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.value} - ${v.price}
@@ -412,14 +427,14 @@ function OrderItemRow({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 items-end">
+      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         <label className="text-sm font-medium xl:col-span-2">
           Nombre manual / ID
           <Input
             value={item.name}
             onChange={(event) => onUpdate(index, "name", event.target.value)}
             placeholder="Producto"
-            className="mt-1 bg-background"
+            className="mt-1 h-11 bg-background"
           />
         </label>
         <label className="text-sm font-medium">
@@ -431,7 +446,7 @@ function OrderItemRow({
             value={item.price}
             onChange={(event) => onUpdate(index, "price", event.target.value)}
             placeholder="100"
-            className="mt-1 bg-background"
+            className="mt-1 h-11 bg-background"
           />
         </label>
         <label className="text-sm font-medium">
@@ -443,17 +458,17 @@ function OrderItemRow({
             value={item.amount}
             onChange={(event) => onUpdate(index, "amount", event.target.value)}
             placeholder="1"
-            className="mt-1 bg-background"
+            className="mt-1 h-11 bg-background"
           />
         </label>
 
-        <div className="flex items-end justify-end pt-2 xl:pt-0 h-10">
+        <div className="flex items-end justify-end pt-2 xl:pt-0">
           <Button
             type="button"
             variant="destructive"
             onClick={onRemove}
             disabled={!canRemove}
-            className="w-full shrink-0 bg-red-600 hover:bg-red-700 text-white"
+            className="w-full shrink-0 bg-red-600 text-white hover:bg-red-700"
             title="Eliminar producto"
           >
             <Trash2 className="mr-2 h-4 w-4" />
