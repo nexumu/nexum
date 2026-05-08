@@ -16,7 +16,6 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { getCatalogInfo } from "@/lib/catalog";
 import { getCategories } from "@/lib/firebase/categories";
 import { getFilteredProducts } from "@/lib/firebase/products";
 
@@ -46,7 +45,6 @@ export default async function SearchPage({
   const isFeatured = isChecked(params.featured);
   const category = params.category?.trim() ?? "";
   const subcategory = params.subcategory?.trim() ?? "";
-  const catalog = await getCatalogInfo("nexum");
 
   const [products, categories] = await Promise.all([
     getFilteredProducts({
@@ -179,14 +177,10 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar catalog={catalog} />
+      <Navbar />
       <main className="mx-auto w-full max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8 overflow-hidden rounded-3xl border border-border/70 bg-[linear-gradient(145deg,oklch(0.98_0.008_95)_0%,oklch(0.95_0.018_88)_55%,oklch(0.93_0.03_84)_100%)] p-5 shadow-sm sm:p-7">
           <div className="flex flex-col gap-4">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[oklch(0.45_0.04_65)]">
-              <Sparkles className="size-3.5" />
-              {`Catalogo ${catalog.username}`}
-            </p>
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                 Resultados de busqueda
@@ -305,7 +299,7 @@ export default async function SearchPage({
           </section>
         </div>
       </main>
-      <Footer catalog={catalog} />
+      <Footer />
     </div>
   );
 }

@@ -56,11 +56,9 @@ import {
 } from "@/lib/cart";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { type CatalogInfo } from "@/lib/catalog";
 
 type NavbarProps = {
   company?: string;
-  catalog?: CatalogInfo;
 };
 
 const links = [
@@ -89,7 +87,7 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
-export function Navbar({ company, catalog }: NavbarProps) {
+export function Navbar({ company }: NavbarProps) {
   const basePath = company ? `/${company}` : "";
   const homePath = basePath || "/";
   const searchPath = `${basePath}/search`;
@@ -282,7 +280,7 @@ export function Navbar({ company, catalog }: NavbarProps) {
             href={homePath}
             className="inline-flex items-center mr-4 gap-2 rounded-md px-1 py-1 text-sm font-semibold tracking-[0.18em] uppercase text-foreground"
           >
-            {catalog?.username ? catalog.username : <Image src="/logo.png" alt="Nexum" width={100} height={32} className="h-12 w-auto object-contain" />}
+            <Image src="/logo.png" alt="Nexum" width={100} height={32} className="h-12 w-auto object-contain" />
           </Link>
 
           <NavigationMenu viewport={false} className="hidden md:flex">

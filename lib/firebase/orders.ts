@@ -8,6 +8,8 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
+  runTransaction,
+  where,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase/server";
@@ -22,6 +24,8 @@ import {
 const ordersCollection = collection(db, "orders");
 
 function mapOrderData(id: string, data: Record<string, unknown>): Order {
+  const displayId = data.displayId as number | undefined;
+  const orderId = displayId !== undefined ? String(displayId) : id;
   const items = normalizeOrderItems(data.items);
   const subtotal = calculateOrderSubtotal(items);
   const shippingCost = Number(data.shippingCost ?? 0);
@@ -39,11 +43,11 @@ function mapOrderData(id: string, data: Record<string, unknown>): Order {
     createdAtRaw instanceof Timestamp
       ? createdAtRaw.toDate()
       : createdAtRaw instanceof Date
-      ? createdAtRaw
-      : undefined;
+        ? createdAtRaw
+        : undefined;
 
   return {
-    id,
+    id: orderId,
     customerName: String(data.customerName ?? "Sin nombre"),
     address: String(data.address ?? "Sin direccion"),
     whatsapp: String(data.whatsapp ?? ""),
@@ -66,7 +70,22 @@ export type CreateOrderInput = {
   source?: "manual" | "checkout";
 };
 
+async function getNextDisplayId(): Promise<number> {
+  const counterRef = doc(db, "counters", "orders");
+
+  const newId = await runTransaction(db, async (transaction) => {
+    const counterDoc = await transaction.get(counterRef);
+    const currentValue = counterDoc.exists() ? (counterDoc.data().value as number) : 9;
+    const nextValue = currentValue + 1;
+    transaction.set(counterRef, { value: nextValue });
+    return nextValue;
+  });
+
+  return newId;
+}
+
 export async function createOrder(input: CreateOrderInput) {
+  const displayId = await getNextDisplayId();
   const items = normalizeOrderItems(input.items);
   const subtotal = calculateOrderSubtotal(items);
   const shippingCost = Number(input.shippingCost ?? 0);
@@ -83,12 +102,13 @@ export async function createOrder(input: CreateOrderInput) {
     status: "pendiente" as const,
     source: input.source === "manual" ? "manual" : "checkout",
     items,
+    displayId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
 
   const docRef = await addDoc(ordersCollection, payload);
-  return { id: docRef.id, ...payload };
+  return { id: String(displayId), ...payload };
 }
 
 export async function getAllOrders(): Promise<Order[]> {
